@@ -22,7 +22,7 @@ static host." Everything below follows from that.
 
 ## Live hosting: Cloudflare Pages
 
-The game is live at **https://sreadle.pages.dev**, hosted on Cloudflare
+The game is live at **https://sreadle.fun**, hosted on Cloudflare
 Pages (moved from GitHub Pages on November 2, 2026; the GitHub Pages copy
 at `https://theoliviawales.github.io/sreadle/` still updates from the same
 repository and works as a mirror).

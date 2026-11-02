@@ -20,7 +20,7 @@ percentage, and a streak to keep alive.
 - Each daily puzzle allows 2 attempts; after that it locks and keeps your
   best result. The results screen shares Wordle-style text (accuracy, score,
   per-measure squares) with a deep link to that day's puzzle, for example
-  `https://sreadle.pages.dev/?day=4`.
+  `https://sreadle.fun/?day=4`.
 - Your personal stats (streak, best scores) are stored only in your
   browser's localStorage. The game also sends one anonymous beacon per
   finished round to a stats endpoint that keeps only aggregate counters
@@ -58,6 +58,6 @@ file server.
 ## Deployment
 
 See [DEPLOYMENT.md](DEPLOYMENT.md). Short version: the game is live at
-**https://sreadle.pages.dev** (Cloudflare Pages, connected to this
+**https://sreadle.fun** (Cloudflare Pages, connected to this
 repository; every push to `main` redeploys). The GitHub Pages mirror at
 `https://theoliviawales.github.io/sreadle/` updates from the same pushes.
