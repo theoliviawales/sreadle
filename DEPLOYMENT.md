@@ -51,6 +51,44 @@ for a daily-game audience.
    Cloudflare gives faster global caching and privacy-friendly analytics in
    one dashboard. The same single file works unchanged.
 
+## Admin page: creating new rhythms
+
+The game ships with a built-in admin page (same `index.html`, opened from the
+home screen's Create/Admin button, hash route `#/admin`) designed for a
+phone:
+
+- Build a 4/4 measure element by element: duration chips (half, dotted
+  quarter, quarter, dotted eighth, eighth, sixteenth), a Note/Rest toggle so
+  any beat can be removed and turned into a rest, a Dot modifier, and a
+  tuplet tool for groups of 3, 5, 6, and 7 in a beat.
+- A live beats counter (x / 4) and the game's own notation renderer show the
+  measure as it is built; tapping a note in the preview flips it to a rest,
+  dots it where the math stays valid, or deletes it. Measures can be added
+  (up to 8), reordered by editing, and test-played through the real game
+  before saving.
+- Saved rhythms live in the browser's localStorage library ("My rhythms").
+  Setting a day number on a saved rhythm makes that day use it on that
+  device, overriding the generated rhythm locally.
+
+### Publishing a created rhythm to all players
+
+Static hosting has no database to save to, so publishing is a two-step flow
+by design:
+
+1. In the admin page, tap Export on the rhythm. This copies a compact JSON
+   block (name, tempo, measures) to the clipboard.
+2. Add that JSON to the authored rhythms data in `index.html` (the same data
+   block that holds Days 1 to 10) in this repository and push to `main`.
+   GitHub Pages redeploys automatically and the rhythm becomes that day's
+   official puzzle for everyone.
+
+Until step 2 happens, a created rhythm is private to the device that made it.
+If self-serve publishing ever becomes important (for example, a second admin
+or community submissions), that is the point to add the small backend
+described under "If it outgrows static hosting": an authenticated endpoint
+that accepts rhythm JSON and commits it, or a tiny database the page reads at
+load. Neither is needed for a single admin working from one phone.
+
 ## Make it feel like a real daily game
 
 - **Midnight rollover**: the puzzle number is derived from the date in

@@ -19,6 +19,15 @@ percentage, and a streak to keep alive.
 - The metronome clicks on every beat for the whole round.
 - Stats (streak, best scores) are stored only in your browser's localStorage.
 
+## Creating rhythms (admin page)
+
+The game includes a phone-friendly admin page (the Create/Admin button in the
+game, hash route `#/admin`) for composing new rhythms: pick durations and
+tuplets (3, 5, 6, 7), flip notes to rests, dot notes, preview with real
+notation, and test-play before saving. Saved rhythms stay in the browser;
+exporting one as JSON and adding it to the authored data in `index.html` is
+how a rhythm becomes official for all players (see `DEPLOYMENT.md`).
+
 ## Files
 
 - `index.html`: the entire game, self-contained (no build step).
