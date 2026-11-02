@@ -161,39 +161,166 @@ canvas#edCanvas{width:100%;height:132px;display:block;background:#fff;border:1px
 .lib-btns{display:flex;gap:8px;margin-top:10px}
 .lib-btns .abtn{flex:1;min-height:48px;font-size:14px}
 @media (prefers-reduced-motion: reduce){ .judge-pop.show{animation:none;opacity:1} }
+/* ===== UX overhaul: one-screen daily-game layout ===== */
+header{padding:10px 14px;border-bottom:3px solid var(--amber)}
+header .wrap{display:flex;align-items:center;justify-content:space-between;gap:10px;max-width:760px}
+header h1{font-size:27px}
+.hicons{display:flex;gap:6px;align-items:center}
+.hicons button,.hicons a{width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:var(--header-ink);font-weight:900;font-size:19px;cursor:pointer;text-decoration:none}
+.hicons button:active,.hicons a:active{background:rgba(255,255,255,.22)}
+.hicons svg{width:21px;height:21px}
+main{max-width:760px;padding:10px 12px 26px}
+#gameView{display:flex;flex-direction:column}
+.puzzle-card{order:1;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:11px 13px;margin-bottom:10px}
+.puzzle-card .pz-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.puzzle-card .t{font-weight:900;font-size:17px}
+.puzzle-card .d{color:var(--muted);font-size:12.5px;font-weight:600;margin-top:1px}
+.puzzle-card .meta{margin-top:9px}
+.puzzle-card .meta span{background:var(--chip);border-color:var(--line);color:var(--ink)}
+.puzzle-card .meta span b{color:var(--amber-dark)}
+@media (prefers-color-scheme: dark){ .puzzle-card .meta span b{color:var(--amber)} }
+.pz-blurb{font-size:13px;color:var(--muted);line-height:1.45;margin:9px 0 0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+#attemptDots{font-size:15px;letter-spacing:3px;color:var(--amber-dark);white-space:nowrap;padding-top:2px}
+@media (prefers-color-scheme: dark){ #attemptDots{color:var(--amber)} }
+#todayBtn{border:1px solid var(--line);background:var(--chip);color:var(--ink);border-radius:9px;font-weight:800;font-size:12.5px;padding:8px 10px;cursor:pointer;margin-top:8px}
+.attempt-row{order:2;margin:0 2px 8px}
+.staff-card{order:3}
+.progress-row{order:4;margin:9px 2px}
+.hud{order:5;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:9px}
+.hud .cell{padding:7px 8px 6px;border-radius:10px}
+.hud .value{font-size:clamp(16px,4.6vw,22px)}
+.controls{order:6;margin-bottom:9px;gap:8px}
+#startBtn{flex:1 1 100%;order:-1;min-height:56px;font-size:19px;border-radius:14px}
+.seg button{min-height:44px;padding:9px 12px}
+#metroBtn{min-height:44px;padding:9px 12px}
+#mercyBanner{order:7;display:none;background:#fff8e1;border:1.5px solid var(--amber);color:#3d2e00;border-radius:14px;padding:13px 14px;margin-bottom:10px}
+@media (prefers-color-scheme: dark){ #mercyBanner{background:#2b2303;color:#ffe9a8} }
+#mercyBanner.on{display:block}
+#mercyBanner .mb-t{font-weight:900;font-size:15.5px}
+#mercyBanner .mb-d{font-size:13.5px;line-height:1.45;margin-top:3px}
+#mercyBanner .mb-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+#mercyBanner .mb-btns button{min-height:48px;border-radius:11px;font-weight:900;font-size:14.5px;cursor:pointer;border:1px solid var(--line);background:var(--panel);color:var(--ink)}
+#mercyBanner .mb-btns .slow{background:var(--amber);color:#191200;border:0}
+#quitBtn{order:8}
+#tapPad{order:9;min-height:138px;border-radius:16px}
+#tapPad .big{font-size:clamp(30px,9vw,44px)}
+.feedback{order:10;margin-top:8px;min-height:22px}
+.results{order:11}
+#archivePanel{order:12}
+#gameView details{order:13}
+#gameView footer{order:14}
+#countdown{font-family:"IBM Plex Mono",monospace;font-weight:700;font-size:15px;color:var(--muted);margin-top:4px}
+.rstats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:16px}
+.rstats div{background:var(--chip);border-radius:12px;padding:11px 4px}
+.rstats b{display:block;font-family:"IBM Plex Mono",monospace;font-size:21px}
+.rstats span{font-size:10.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.modal-wrap{position:fixed;inset:0;background:rgba(10,10,12,.55);display:none;place-items:center;padding:16px;z-index:60}
+.modal-wrap.on{display:grid}
+.modal{background:var(--panel);color:var(--ink);border-radius:18px;max-width:430px;width:100%;max-height:88dvh;overflow:auto;padding:22px 20px;box-shadow:0 24px 60px rgba(0,0,0,.35)}
+.modal h2{margin:0 0 4px;font-size:23px;font-weight:900;letter-spacing:-.02em}
+.modal .rule{font-size:15px;line-height:1.5;margin:10px 0 0}
+.modal .rule b{color:var(--ink)}
+.example{margin:16px 0 4px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 12px 10px;color:#111}
+.example .ex-line{position:relative;height:2px;background:#111;margin:20px 4px 8px}
+.example .ex-note{position:absolute;top:-7px;width:16px;height:12px;border-radius:50%;transform:rotate(-20deg)}
+.example .ex-labels{display:flex;justify-content:space-between;font-size:11.5px;font-weight:800;padding:0 2px}
+.example .ex-cap{font-size:12px;color:#555;font-weight:600;margin-top:8px;text-align:center}
+.modal .big-btn{width:100%;min-height:52px;border:0;border-radius:12px;background:var(--amber);color:#191200;font-weight:900;font-size:16px;cursor:pointer;margin-top:18px;box-shadow:0 3px 0 var(--amber-dark)}
+.modal .ghost-btn{width:100%;min-height:48px;border:1px solid var(--line);border-radius:12px;background:var(--chip);color:var(--ink);font-weight:800;font-size:15px;cursor:pointer;margin-top:8px}
+.mstats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:16px 0 6px}
+.mstats div{background:var(--chip);border-radius:12px;padding:12px 4px;text-align:center}
+.mstats b{display:block;font-family:"IBM Plex Mono",monospace;font-size:23px}
+.mstats span{font-size:10.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.hist{list-style:none;margin:10px 0 0;padding:0}
+.hist li{display:flex;justify-content:space-between;padding:9px 2px;border-bottom:1px solid var(--line);font-weight:700;font-size:14.5px}
+.hist li span:last-child{font-family:"IBM Plex Mono",monospace}
+.hist-empty{color:var(--muted);font-size:14px;font-weight:600;margin-top:10px}
+/* ===== Playing state: fixed-height 100dvh column, TAP pad pinned to the bottom =====
+   Active only while a round is running (body.playing, set by startGame and removed
+   by finish/quit). Non-essential chrome collapses or hides so the whole play screen
+   fits one phone viewport with no scrolling; the home screen and admin keep the
+   normal flowing layout above. */
+body.playing{height:100vh;height:100dvh;max-height:100dvh;overflow:hidden;display:flex;flex-direction:column}
+body.playing header{flex:0 0 auto;padding:6px 12px}
+body.playing header h1{font-size:22px}
+body.playing .hicons button,body.playing .hicons a{width:36px;height:36px;font-size:16px}
+body.playing .hicons svg{width:18px;height:18px}
+body.playing main{flex:1 1 auto;min-height:0;width:100%;display:flex;flex-direction:column;overflow:hidden;padding:8px 10px calc(8px + env(safe-area-inset-bottom,0px))}
+body.playing #gameView{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;gap:6px}
+/* slim one-line puzzle bar */
+body.playing .puzzle-card{flex:0 0 auto;margin:0;padding:7px 11px;border-radius:11px}
+body.playing .puzzle-card .t{font-size:15.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.playing .puzzle-card .meta,body.playing .puzzle-card .pz-blurb,body.playing .puzzle-card #todayBtn,body.playing .puzzle-card #todaySub,body.playing .puzzle-card #todayAttempts{display:none}
+body.playing #attemptDots{padding-top:0;font-size:13px}
+/* chrome that is not needed mid-round */
+body.playing .attempt-row,body.playing .controls,body.playing #mercyBanner,body.playing .results,body.playing #archivePanel,body.playing #gameView details,body.playing #gameView footer{display:none}
+/* staff card: shrinks before the pad ever does */
+body.playing .staff-card{flex:0 1 auto;min-height:0;border-radius:12px}
+body.playing .staff-top{padding:6px 12px 0;font-size:11px}
+body.playing canvas#staff{height:190px}
+@media (max-width:520px){ body.playing canvas#staff{height:172px} }
+body.playing .progress-row{flex:0 0 auto;margin:0 2px}
+body.playing .progress{height:8px}
+/* one-row HUD */
+body.playing .hud{flex:0 0 auto;margin:0;gap:5px}
+body.playing .hud .cell{padding:5px 7px 4px;border-radius:9px}
+body.playing .hud .label{font-size:9px}
+body.playing .hud .value{font-size:clamp(15px,4.4vw,20px)}
+body.playing .hud .value small{font-size:11px}
+/* compact quit + single-line feedback sit directly above the pad */
+body.playing #quitBtn{order:7;flex:0 0 auto;align-self:flex-end;min-height:32px;padding:5px 12px;font-size:12.5px;margin:0;border-radius:9px}
+body.playing .feedback{order:8;flex:0 0 auto;min-height:18px;margin:0;font-size:12.5px;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* TAP pad: final element, fills whatever space is left, anchored to the bottom */
+body.playing #tapPad{order:9;flex:1 1 auto;min-height:104px;margin-top:auto;display:flex;flex-direction:column;align-items:center;justify-content:center}
+/* shorter viewports: shrink staff, HUD and header first, never the pad off-screen */
+@media (max-height:700px){
+  body.playing canvas#staff{height:138px}
+  body.playing .hud .cell{padding:4px 7px 3px}
+}
+@media (max-height:600px){
+  body.playing header{padding:4px 10px}
+  body.playing header h1{font-size:19px}
+  body.playing .hicons button,body.playing .hicons a{width:32px;height:32px}
+  body.playing canvas#staff{height:112px}
+  body.playing #tapPad{min-height:84px}
+  body.playing #tapPad .big{font-size:clamp(24px,7vw,34px)}
+  body.playing #tapPad .sub{font-size:12px;margin-top:4px}
+}
+@media (max-height:460px){
+  body.playing canvas#staff{height:84px}
+  body.playing .puzzle-card{display:none}
+  body.playing #tapPad{min-height:72px}
+}
 </style>
 </head>
 <body>
 <header>
   <div class="wrap">
     <h1>Sreadle<span class="accent">.</span></h1>
-    <div class="sub">Sight Readle, a daily rhythm sight-reading game</div>
-    <p>One new rhythm every day. The notation scrolls under the amber playhead, the metronome clicks on every beat from count-in to the final barline, and all you have is time.</p>
-    <div class="meta"><span id="metaDay">Sreadle <b>#1</b></span><span id="metaDate"><b>Mon, Nov 2, 2026</b></span><span>♩ = <b id="metaBpm">67</b> BPM</span><span><b>4/4</b> · <span id="metaMeasures">8</span> measures</span><span><b id="metaNotes">99</b> notes</span></div>
+    <nav class="hicons" aria-label="Game">
+      <button id="helpBtn" type="button" aria-label="How to play" title="How to play">?</button>
+      <button id="statsBtn" type="button" aria-label="Your statistics" title="Statistics"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="4" y="12" width="4" height="8" rx="1"/><rect x="10" y="7" width="4" height="13" rx="1"/><rect x="16" y="3" width="4" height="17" rx="1"/></svg></button>
+      <button id="archiveBtn" type="button" aria-label="Archive of past puzzles" title="Archive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></button>
+      <a id="createBtn" href="#/admin" aria-label="Create and admin: build your own rhythms" title="Create / Admin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg></a>
+    </nav>
   </div>
 </header>
 
 <main>
   <div id="gameView">
-  <div class="today-row">
-    <div>
-      <div class="t" id="todayTitle">Today: Sreadle #1</div>
-      <div class="d" id="todaySub">A new rhythm unlocks every day at midnight, Seattle time.</div>
-      <div class="d" id="todayAttempts">Attempts left for today's puzzle: 2 of 2</div>
+  <div class="puzzle-card">
+    <div class="pz-top">
+      <div>
+        <div class="t" id="todayTitle">Today: Sreadle #1</div>
+        <div class="d" id="todaySub">A new rhythm unlocks every day at midnight, Seattle time.</div>
+        <div class="d" id="todayAttempts">Attempts left for today's puzzle: 2 of 2</div>
+      </div>
+      <span id="attemptDots" title="Attempts remaining" aria-label="Attempts remaining">●●</span>
     </div>
-    <button id="todayBtn" type="button">▶ Play today's Sreadle</button>
-    <a class="create-link" href="#/admin">✎ Create</a>
+    <div class="meta"><span id="metaDay">Sreadle <b>#1</b></span><span id="metaDate"><b>Mon, Nov 2, 2026</b></span><span>♩ = <b id="metaBpm">67</b> BPM</span><span><b>4/4</b> · <span id="metaMeasures">8</span> measures</span><span><b id="metaNotes">99</b> notes</span></div>
+    <p class="pz-blurb" id="dayBlurb">Day 1 is the original Level 8 exercise from the reel: the first two measures are the reel's own sheet music, quintuplet, sextuplet, septuplet and all.</p>
+    <button id="todayBtn" type="button">↺ Jump to today's puzzle</button>
   </div>
-
-  <div class="stats-row" aria-label="Your stats">
-    <div class="cell"><div class="v" id="statPlayed">0</div><div class="l">Days played</div></div>
-    <div class="cell"><div class="v" id="statStreak">0</div><div class="l">Day streak</div></div>
-    <div class="cell"><div class="v" id="statBest">—</div><div class="l">Best score</div></div>
-  </div>
-
-  <p class="instructions"><strong>Tap the pad, or press any key, exactly when a note crosses the yellow line.</strong> You get one full measure of metronome count-in first, and the metronome keeps clicking on every beat for the whole round, with an accent on each downbeat.</p>
-  <p class="note-line" id="dayBlurb">Day 1 is the original Level 8 exercise from the reel: the first two measures are the reel's own sheet music, quintuplet, sextuplet, septuplet and all.</p>
-  <p class="note-line">Sound tip: Sreadle asks your browser to play through silent mode on iPhone. If you still hear nothing, raise the volume or flip the side switch.</p>
 
   <div class="controls" aria-label="Game controls">
     <div class="seg" role="group" aria-label="Speed">
@@ -236,12 +363,13 @@ canvas#edCanvas{width:100%;height:132px;display:block;background:#fff;border:1px
   </button>
   <div class="feedback" id="feedback">Press Start, hear the count-in, then tap on the line.</div>
 
-  <div class="legend" aria-label="Judging windows">
-    <span><i class="dot" style="background:#159947"></i>Perfect ±45 ms</span>
-    <span><i class="dot" style="background:#65a30d"></i>Great ±90 ms</span>
-    <span><i class="dot" style="background:#d97706"></i>Good ±140 ms</span>
-    <span><i class="dot" style="background:#d92d20"></i>Miss / extra tap</span>
-    <span>Flam = two quick taps: the small grace note, then the beat</span>
+  <div id="mercyBanner" role="group" aria-label="Attempt 2 aid">
+    <div class="mb-t">Attempt 2: one free aid, your choice</div>
+    <div class="mb-d">This is your final attempt at this puzzle. Take it once through at a slower tempo, or play it at full speed. Either way it counts as attempt 2.</div>
+    <div class="mb-btns">
+      <button type="button" class="slow" id="mercySlowBtn">Play it slower (0.75×) for attempt 2</button>
+      <button type="button" id="mercyFullBtn">No aid, full speed</button>
+    </div>
   </div>
 
   <section class="results" id="results" aria-live="polite">
@@ -259,13 +387,22 @@ canvas#edCanvas{width:100%;height:132px;display:block;background:#fff;border:1px
     </div>
     <div class="res-btns">
       <button id="shareBtn" type="button">Share results</button>
+      <div id="countdown" aria-label="Time until the next puzzle">Next Sreadle in --:--:--</div>
       <button id="againBtn" type="button">Play again</button>
+    </div>
+    <div class="rstats" aria-label="Your stats">
+      <div><b id="rPlayed">0</b><span>Played</span></div>
+      <div><b id="rStreak">0</b><span>Cur. streak</span></div>
+      <div><b id="rBestStreak">0</b><span>Best streak</span></div>
+      <div><b id="rBestAcc">—</b><span>Best acc.</span></div>
     </div>
   </section>
 
+  <div id="archivePanel" hidden>
   <h2 class="sec">Earlier days</h2>
   <p class="sec-d">Every past puzzle stays playable. Days 1 to 10 are hand-written; from Day 11 on, each day's rhythm is generated from its puzzle number, so it is the same for every player, forever, with no server involved. A ✓ means you have finished that day.</p>
   <div class="archive" id="archiveList" role="group" aria-label="Archive of past days"></div>
+  </div>
 
   <details>
     <summary>About this rhythm</summary>
@@ -283,29 +420,7 @@ canvas#edCanvas{width:100%;height:132px;display:block;background:#fff;border:1px
     </ul>
   </details>
 
-  <details>
-    <summary>The plan: putting Sreadle online with GitHub Pages</summary>
-    <p>Sreadle is a single static <b>index.html</b>: no build step, no backend, no database. The daily puzzle is chosen by date and generated in the browser, so a plain static host is all it ever needs, and GitHub Pages is free.</p>
-    <ol>
-      <li><b>Create the repository.</b> On github.com, make a new public repository named <b>sreadle</b> (no template, no README needed). Or from the command line with the GitHub CLI: <b>gh repo create sreadle --public</b>.</li>
-      <li><b>Add the game.</b> Put this page in the repo root as <b>index.html</b> and push:</li>
-    </ol>
-    <pre>git init
-git add index.html
-git commit -m "Sreadle: daily rhythm sight-reading game"
-git branch -M main
-git remote add origin https://github.com/YOUR-USERNAME/sreadle.git
-git push -u origin main</pre>
-    <ol start="3">
-      <li><b>Turn on Pages.</b> In the repo: Settings → Pages → Build and deployment → Deploy from a branch → <b>main</b>, folder <b>/ (root)</b>, Save. Within a minute the game is live at <b>https://YOUR-USERNAME.github.io/sreadle/</b>.</li>
-      <li><b>Optional custom domain.</b> Buy a domain, add a file named <b>CNAME</b> containing it (for example sreadle.com) to the repo root, and point the domain's DNS at GitHub Pages per the Pages settings screen. HTTPS is automatic.</li>
-      <li><b>Daily content needs no work.</b> There is nothing to publish each morning: the page computes the puzzle number from the date, Days 1 to 10 are baked in, and later days generate themselves deterministically. Updating the game is just a commit and a push.</li>
-      <li><b>Publishing a rhythm you created:</b> in the in-game Rhythm creator, Export copies the rhythm as JSON (name, tempo, measures). To make it an official day for every player, paste that JSON into the <b>AUTHORED_RHYTHMS</b> table near the top of the script in index.html, keyed by its day number, then commit and push. Authored entries beat both the hand-written days and the generator, and the creator's "Edit this day" can reopen any day, built-in or generated, to tweak and re-export.</li>
-      <li><b>Later, if it grows:</b> add an <b>og:image</b> and social meta tags so shared results look good, split puzzles into a <b>puzzles.js</b> file if hand-writing more days, and add a service worker only if offline play becomes a goal. Accounts, leaderboards and synced stats would need a backend, which is the one thing this design deliberately avoids.</li>
-    </ol>
-  </details>
-
-  <footer>Sreadle began as a faithful recreation of the Glisso-style rhythm sightreading reel: a single-line staff, a fixed amber playhead, and no pitch to hide behind, only time. Now it shows up every day.</footer>
+  <footer>Sreadle began as a faithful recreation of the Glisso-style rhythm sightreading reel: a single-line staff, a fixed amber playhead, and no pitch to hide behind, only time. Now it shows up every day.<br><br>Privacy: your stats live only in this browser. When a daily attempt ends, the game sends one anonymous count (puzzle number, attempt, and a coarse accuracy band) so daily totals can be published in aggregate. No cookies, no accounts, no identifiers, nothing that can point back to you.</footer>
   </div><!-- /gameView -->
 
   <section id="adminView" hidden>
@@ -387,6 +502,42 @@ git push -u origin main</pre>
     <div class="ed-msg" id="imMsg" role="status"></div>
   </section>
 </main>
+
+<div class="modal-wrap" id="helpModal" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+  <div class="modal">
+    <h2 id="helpTitle">How to play</h2>
+    <p class="rule"><b>1.</b> Tap the pad (or press any key) exactly when each note crosses the amber line.</p>
+    <p class="rule"><b>2.</b> The metronome counts you in for one measure, then clicks every beat for the whole round. A note with a tiny grace note before it is a flam: two quick taps, grace first, then the beat.</p>
+    <p class="rule"><b>3.</b> You get 2 attempts at each day's rhythm. A new puzzle arrives at midnight, Seattle time.</p>
+    <div class="example" aria-hidden="true">
+      <div class="ex-line">
+        <span class="ex-note" style="left:12%;background:#159947"></span>
+        <span class="ex-note" style="left:47%;background:#eab308"></span>
+        <span class="ex-note" style="left:82%;background:#d92d20"></span>
+      </div>
+      <div class="ex-labels"><span style="color:#159947">PERFECT · on the line</span><span style="color:#a16207">CLOSE · just off</span><span style="color:#d92d20">MISS · no tap</span></div>
+      <div class="ex-cap">Green within ±45 ms · Great ±90 ms · Good ±140 ms · after that, a miss</div>
+    </div>
+    <p class="rule" style="color:var(--muted);font-size:13.5px">Sound tip: Sreadle asks your browser to play through silent mode on iPhone. If you still hear nothing, raise the volume or flip the side switch.</p>
+    <button class="big-btn" id="helpGotIt" type="button">Got it</button>
+  </div>
+</div>
+
+<div class="modal-wrap" id="statsModal" role="dialog" aria-modal="true" aria-labelledby="statsTitle">
+  <div class="modal">
+    <h2 id="statsTitle">Statistics</h2>
+    <div class="mstats">
+      <div><b id="mPlayed">0</b><span>Played</span></div>
+      <div><b id="mStreak">0</b><span>Cur. streak</span></div>
+      <div><b id="mBestStreak">0</b><span>Best streak</span></div>
+      <div><b id="mBestAcc">—</b><span>Best acc.</span></div>
+    </div>
+    <h3 style="margin:14px 0 0;font-size:15px;font-weight:900">Last 7 days played</h3>
+    <ul class="hist" id="statsHistory"></ul>
+    <p class="hist-empty" id="statsHistoryEmpty">No finished days yet. Today's rhythm is waiting.</p>
+    <button class="ghost-btn" id="statsClose" type="button">Close</button>
+  </div>
+</div>
 
 <script>
 (function(){
@@ -623,7 +774,9 @@ function generateDay(n){
     measures:measureFns };
 }
 var AUTHORED_RHYTHMS={}; /* day number -> exported rhythm JSON from the creator; authored entries beat built-in and generated days */
+var remotePatterns={}; /* day number -> rhythm from patterns.json, fetched at load; published patterns beat everything embedded */
 function getDay(n){
+  if(remotePatterns[n]) return defFromElements(remotePatterns[n]);
   if(AUTHORED_RHYTHMS[n]) return defFromElements(AUTHORED_RHYTHMS[n]);
   var ov=findOverride(n); if(ov) return defFromElements(ov);
   return n<=10 ? DAYS[n-1] : generateDay(n);
@@ -652,15 +805,30 @@ var LS_KEY='sreadle-stats-v1';
 var stats={days:{}};
 try{ var raw=localStorage.getItem(LS_KEY); if(raw){ var parsed=JSON.parse(raw); if(parsed && parsed.days) stats=parsed; } }catch(e){}
 function saveStats(){ try{ localStorage.setItem(LS_KEY,JSON.stringify(stats)); }catch(e){} }
-function renderStats(){
-  var played=0,best=null;
-  Object.keys(stats.days).forEach(function(k){ var d=stats.days[k]; if(d && d.done){ played++; if(best===null||d.best>best) best=d.best; } });
+function computeStats(){
+  var played=0,bestAcc=null,doneDays=[];
+  Object.keys(stats.days).forEach(function(k){ var d=stats.days[k]; if(d && d.done){ played++; doneDays.push(parseInt(k,10)); if(d.bestResult && (bestAcc===null||d.bestResult.acc>bestAcc)) bestAcc=d.bestResult.acc; } });
+  doneDays.sort(function(a,b){return a-b;});
   var streak=0, start=todayNumber();
   if(!(stats.days[start] && stats.days[start].done)) start=start-1;
   for(var d=start; d>=1; d--){ if(stats.days[d] && stats.days[d].done) streak++; else break; }
-  document.getElementById('statPlayed').textContent=played;
-  document.getElementById('statStreak').textContent=streak;
-  document.getElementById('statBest').textContent= best===null?'—':best;
+  var bestStreak=0,run=0,prev=null;
+  doneDays.forEach(function(n){ run=(prev!==null && n===prev+1)?run+1:1; if(run>bestStreak) bestStreak=run; prev=n; });
+  var history=doneDays.slice().sort(function(a,b){return b-a;}).slice(0,7).map(function(n){ var r=stats.days[n]; return {day:n, acc:(r.bestResult?r.bestResult.acc:0)}; });
+  return {played:played, streak:streak, bestStreak:bestStreak, bestAcc:bestAcc, history:history};
+}
+function setTxt(id,v){ var el=document.getElementById(id); if(el) el.textContent=v; }
+function renderStats(){
+  var s=computeStats();
+  var accTxt= s.bestAcc===null?'—':(Math.round(s.bestAcc*10)/10)+'%';
+  setTxt('mPlayed',s.played); setTxt('mStreak',s.streak); setTxt('mBestStreak',s.bestStreak); setTxt('mBestAcc',accTxt);
+  setTxt('rPlayed',s.played); setTxt('rStreak',s.streak); setTxt('rBestStreak',s.bestStreak); setTxt('rBestAcc',accTxt);
+  var ul=document.getElementById('statsHistory');
+  if(ul){
+    ul.innerHTML='';
+    s.history.forEach(function(h){ var li=document.createElement('li'); var a=document.createElement('span'); a.textContent='Sreadle #'+h.day; var b=document.createElement('span'); b.textContent=(Math.round(h.acc*10)/10)+'%'; li.appendChild(a); li.appendChild(b); ul.appendChild(li); });
+    var emp=document.getElementById('statsHistoryEmpty'); if(emp) emp.style.display=s.history.length?'none':'';
+  }
 }
 
 /* ---------- game state ---------- */
@@ -727,6 +895,8 @@ function loadDay(n){
   notes=chart.notes; rests=chart.rests; groups=chart.groups; buildOnsets();
   counts={perfect:0,great:0,good:0,miss:0}; combo=0; bestCombo=0; extraTaps=0; weighted=0;
   finished=false;
+  mercyDecided=false; pendingSlowAid=false; runSlowAid=false;
+  var mbEl=document.getElementById('mercyBanner'); if(mbEl) mbEl.classList.remove('on');
   document.getElementById('results').classList.remove('on');
   document.getElementById('metaDay').innerHTML='Sreadle <b>#'+n+'</b>';
   document.getElementById('metaDate').innerHTML='<b>'+dateLabelFor(n)+'</b>';
@@ -936,14 +1106,15 @@ function finish(){
     var rec=stats.days[selectedDay]||{done:false,best:0,attempts:0,results:[]};
     rec.attempts=(rec.attempts||0)+1; attemptNo=rec.attempts;
     if(!rec.results) rec.results=[];
-    var thisResult={acc:finalAcc, score:finalScore, combo:bestCombo, squares:squares, attempt:attemptNo};
+    var thisResult={acc:finalAcc, score:finalScore, combo:bestCombo, squares:squares, attempt:attemptNo, slowAid:!!runSlowAid};
     rec.results.push(thisResult);
     rec.done=true;
     if(!rec.bestResult || finalScore>rec.bestResult.score){ rec.bestResult=thisResult; rec.best=finalScore; }
     stats.days[selectedDay]=rec;
     saveStats(); renderStats(); renderArchive();
     lastShareText=buildShareText(selectedDay,thisResult);
-    document.getElementById('attemptNote').textContent = attemptNo>=2 ? 'Attempt 2 of 2. That was your last attempt for this puzzle.' : 'Attempt '+attemptNo+' of 2 · '+(2-attemptNo)+' attempt left';
+    sendStatBeacon('complete', selectedDay, attemptNo, finalAcc);
+    document.getElementById('attemptNote').textContent = (attemptNo>=2 ? 'Attempt 2 of 2. That was your last attempt for this puzzle.' : 'Attempt '+attemptNo+' of 2 · '+(2-attemptNo)+' attempt left') + (runSlowAid ? ' · Played at 0.75× with the attempt-2 aid.' : '');
   } else {
     lastShareText='';
     document.getElementById('attemptNote').textContent='Custom rhythm · unlimited plays, and nothing is recorded against a daily puzzle.';
@@ -986,6 +1157,14 @@ function loop(){
 }
 function startGame(){
   if(selectedDay>=1 && isLocked(selectedDay)){ updateAttemptsUI(); document.getElementById('feedback').textContent='This puzzle is locked: both attempts are used. Your best result stands.'; return; }
+  var mb=document.getElementById('mercyBanner');
+  if(selectedDay>=1 && attemptsUsed(selectedDay)===1 && !mercyDecided){
+    if(mb){ mb.classList.add('on'); mb.scrollIntoView({behavior:'smooth',block:'center'}); }
+    document.getElementById('feedback').textContent='Attempt 2: choose your free aid, or take it at full speed.';
+    return;
+  }
+  if(mb) mb.classList.remove('on');
+  runSlowAid=pendingSlowAid; pendingSlowAid=false;
   ensureAudio(); startSilentLoop();
   chart=buildChart(dayDef.measures);
   notes=chart.notes; rests=chart.rests; groups=chart.groups; buildOnsets();
@@ -1014,6 +1193,17 @@ metroBtn.addEventListener('click',function(){
   metroOn=!metroOn;
   metroBtn.setAttribute('aria-pressed', metroOn?'true':'false');
   var s=document.getElementById('metroState'); s.textContent=metroOn?'ON':'OFF'; s.className=metroOn?'on':'';
+});
+document.getElementById('mercySlowBtn').addEventListener('click',function(){
+  mercyDecided=true; pendingSlowAid=true;
+  speed=0.75;
+  segBtns.forEach(function(x){ x.setAttribute('aria-pressed', x.getAttribute('data-speed')==='0.75'?'true':'false'); });
+  document.getElementById('speedInd').textContent='×0.75';
+  startGame();
+});
+document.getElementById('mercyFullBtn').addEventListener('click',function(){
+  mercyDecided=true; pendingSlowAid=false;
+  startGame();
 });
 document.getElementById('startBtn').addEventListener('click',startGame);
 document.getElementById('againBtn').addEventListener('click',function(){ window.scrollTo({top:0,behavior:'smooth'}); startGame(); });
@@ -1474,14 +1664,33 @@ function applyRoute(){
 }
 window.addEventListener('hashchange',applyRoute);
 
+/* ---------- anonymous aggregate stats beacon ---------- */
+/* Sends ONLY {v, day, event, attempt, accBucket, shared:false}: no cookies, no
+   identifiers, no timestamps. Every failure is swallowed; gameplay never waits on it. */
+function accBucketOf(acc){ return acc<50?0 : acc<75?1 : acc<90?2 : 3; }
+function sendStatBeacon(eventName, day, attemptNo, acc){
+  try{
+    if(!(day>=1)) return; /* never for admin test-play or custom library rhythms */
+    var payload=JSON.stringify({v:1, day:day, event:eventName, attempt:(attemptNo===2?2:1), accBucket:accBucketOf(typeof acc==='number'?acc:0), shared:false});
+    var url='api/stats';
+    if(navigator.sendBeacon){
+      try{ if(navigator.sendBeacon(url, new Blob([payload],{type:'application/json'}))) return; }catch(e){}
+    }
+    if(window.fetch){ fetch(url,{method:'POST', body:payload, keepalive:true, credentials:'omit', headers:{'Content-Type':'application/json'}}).catch(function(){}); }
+  }catch(e){}
+}
+
 /* ---------- attempts, sharing, deep links ---------- */
 var runJudged=false;
+var mercyDecided=false, pendingSlowAid=false, runSlowAid=false;
 function fmtAcc(x){ return (Math.round(x*10)/10).toFixed(1).replace(/\.0$/,''); }
 function attemptsUsed(n){ var r=stats.days[n]; return r&&r.attempts?r.attempts:0; }
 function attemptsLeft(n){ return Math.max(0,2-attemptsUsed(n)); }
 function isLocked(n){ return n>=1 && attemptsUsed(n)>=2; }
 function buildShareText(n,res){
-  return 'Sreadle #'+n+'\n'+fmtAcc(res.acc)+'% · Score '+res.score+'/1000 · Best combo '+res.combo+'\nAttempt '+res.attempt+' of 2\n'+res.squares+'\nhttps://theoliviawales.github.io/sreadle/?day='+n;
+  var line2=fmtAcc(res.acc)+'% · Score '+res.score+'/1000 · Best combo '+res.combo;
+  if(res.slowAid) line2+=' at 0.75x';
+  return 'Sreadle #'+n+'\n'+line2+'\nAttempt '+res.attempt+' of 2\n'+res.squares+'\nhttps://theoliviawales.github.io/sreadle/?day='+n;
 }
 function legacyCopy(txt){
   var ta=document.createElement('textarea'); ta.value=txt; ta.style.position='fixed'; ta.style.opacity='0';
@@ -1490,6 +1699,7 @@ function legacyCopy(txt){
   document.body.removeChild(ta);
 }
 function shareResult(text,btn){
+  if(selectedDay>=1){ var srec=stats.days[selectedDay]; sendStatBeacon('share', selectedDay, srec&&srec.attempts?srec.attempts:1, srec&&srec.bestResult?srec.bestResult.acc:0); }
   function copied(){ if(btn){ var t=btn.getAttribute('data-label')||btn.textContent; btn.setAttribute('data-label',t); btn.textContent='Copied ✓'; setTimeout(function(){ btn.textContent=t; },1800); } }
   if(navigator.share){ navigator.share({title:'Sreadle', text:text}).catch(function(){}); return; }
   if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(text).then(copied,function(){ legacyCopy(text); copied(); }); }
@@ -1506,6 +1716,8 @@ function updateAttemptsUI(){
       ? 'Today\u2019s puzzle is locked · Best '+(trec&&trec.bestResult ? fmtAcc(trec.bestResult.acc)+'% · '+trec.bestResult.score+'/1000' : 'no finished run')
       : 'Attempts left for today\u2019s puzzle: '+attemptsLeft(todayNum)+' of 2';
   }
+  var dots=document.getElementById('attemptDots');
+  if(dots){ if(selectedDay===0) dots.textContent=''; else { var lf=attemptsLeft(selectedDay); dots.textContent= lf===2?'●●':lf===1?'●○':'○○'; } }
   if(!info||!sb) return;
   if(selectedDay===0){
     info.textContent='Custom rhythm · unlimited plays';
@@ -1533,10 +1745,14 @@ function quitRun(){
   document.getElementById('quitBtn').hidden=true;
   stopSilentLoop();
   if(selectedDay>=1 && runJudged){
+    var jd=counts.perfect+counts.great+counts.good+counts.miss;
+    var abAcc= jd? ((counts.perfect*100+counts.great*75+counts.good*50)/(jd*100))*100 : 0;
+    var abAttempt=attemptsUsed(selectedDay)+1;
     var rec=stats.days[selectedDay]||{done:false,best:0,attempts:0,results:[]};
     rec.attempts=(rec.attempts||0)+1;
     stats.days[selectedDay]=rec;
     saveStats(); renderStats(); renderArchive();
+    sendStatBeacon('abandon', selectedDay, abAttempt, abAcc);
     document.getElementById('feedback').textContent='Run stopped partway. That used one of your 2 attempts for this puzzle.';
   } else {
     document.getElementById('feedback').textContent='Run stopped.';
@@ -1554,6 +1770,31 @@ function deepLinkDay(){
 }
 var initialDay=deepLinkDay()||todayNum;
 
+/* ---------- header icons, modals, countdown ---------- */
+function openModal(id){ var m=document.getElementById(id); if(m) m.classList.add('on'); }
+function closeModal(id){ var m=document.getElementById(id); if(m) m.classList.remove('on'); }
+document.getElementById('helpBtn').addEventListener('click',function(){ openModal('helpModal'); });
+document.getElementById('helpGotIt').addEventListener('click',function(){ closeModal('helpModal'); try{ localStorage.setItem('sreadle-help-seen-v1','1'); }catch(e){} });
+document.getElementById('statsBtn').addEventListener('click',function(){ renderStats(); openModal('statsModal'); });
+document.getElementById('statsClose').addEventListener('click',function(){ closeModal('statsModal'); });
+document.getElementById('archiveBtn').addEventListener('click',function(){
+  if(location.hash==='#/admin'){ location.hash=''; }
+  var p=document.getElementById('archivePanel'); if(!p) return;
+  p.hidden=!p.hidden;
+  if(!p.hidden) p.scrollIntoView({behavior:'smooth',block:'start'});
+});
+['helpModal','statsModal'].forEach(function(id){ var m=document.getElementById(id); if(m) m.addEventListener('click',function(e){ if(e.target===m) m.classList.remove('on'); }); });
+function updateCountdown(){
+  var el=document.getElementById('countdown'); if(!el) return;
+  try{
+    var la=new Date(new Date().toLocaleString('en-US',{timeZone:'America/Los_Angeles'}));
+    var next=new Date(la.getTime()); next.setHours(24,0,0,0);
+    var s=Math.max(0,Math.floor((next-la)/1000));
+    function p2(x){ return (x<10?'0':'')+x; }
+    el.textContent='Next Sreadle in '+p2(Math.floor(s/3600))+':'+p2(Math.floor(s%3600/60))+':'+p2(s%60);
+  }catch(e){ el.textContent='Next Sreadle at midnight, Seattle time'; }
+}
+
 /* ---------- init ---------- */
 document.getElementById('todayTitle').textContent='Today: Sreadle #'+todayNum;
 document.getElementById('todaySub').textContent=dateLabelFor(todayNum)+' · a new rhythm unlocks every day at midnight, Seattle time.';
@@ -1561,6 +1802,23 @@ resizeCanvas();
 loadDay(initialDay);
 renderStats();
 applyRoute();
+updateCountdown();
+setInterval(updateCountdown,1000);
+try{ if(!localStorage.getItem('sreadle-help-seen-v1')) openModal('helpModal'); }catch(e){}
+/* patterns.json: published rhythms override the embedded ones. Optional enhancement:
+   any failure (missing file, standalone page, offline) silently keeps the embedded data. */
+try{
+  fetch('patterns.json',{cache:'no-store'}).then(function(r){ if(!r.ok) throw new Error('no patterns'); return r.json(); }).then(function(obj){
+    if(!obj || typeof obj!=='object' || Array.isArray(obj)) return;
+    var changed=false;
+    Object.keys(obj).forEach(function(k){
+      var n=parseInt(k,10); if(!(n>=1&&n<=9999)) return;
+      var clean=sanitizeRhythm(obj[k]);
+      if(clean){ remotePatterns[n]=clean; changed=true; }
+    });
+    if(changed && !playing){ loadDay(selectedDay); renderStats(); }
+  }).catch(function(){});
+}catch(e){}
 })();
 </script>
 </body>

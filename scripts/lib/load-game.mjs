@@ -117,9 +117,12 @@ export function loadGame(indexPath) {
     devicePixelRatio: 1,
     innerWidth: 390,
     innerHeight: 844,
-    setTimeout,
+    // Timers are unref'd so page-level intervals (for example the
+    // next-puzzle countdown ticking every second) cannot keep the Node
+    // test process alive after the assertions finish.
+    setTimeout: (...a) => { const t = setTimeout(...a); t.unref?.(); return t; },
     clearTimeout,
-    setInterval,
+    setInterval: (...a) => { const t = setInterval(...a); t.unref?.(); return t; },
     clearInterval,
     URLSearchParams,
     URL

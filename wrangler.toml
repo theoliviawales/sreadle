@@ -1,0 +1,8 @@
+name = "sreadle"
+pages_build_output_dir = "."
+compatibility_date = "2026-11-02"
+
+[[d1_databases]]
+binding = "STATS"
+database_name = "sreadle-stats"
+database_id = "3cdf48d3-4cad-40e1-baeb-fddd77d731ee"
