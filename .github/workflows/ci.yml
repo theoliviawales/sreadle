@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    name: Validate patterns and run tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Rebuild patterns.json and fail if it is out of date
+        run: |
+          node scripts/build-patterns.mjs
+          if ! git diff --exit-code -- patterns.json; then
+            echo "::error::patterns.json is out of date with patterns/. Run 'node scripts/build-patterns.mjs' (or scripts/publish-pattern.mjs) and commit the result."
+            exit 1
+          fi
+
+      - name: Run the test suite
+        run: npm test
+
+  deploy:
+    name: Deploy to Cloudflare Pages
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Check for Cloudflare credentials
+        id: cf
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "::notice::CLOUDFLARE_API_TOKEN and/or CLOUDFLARE_ACCOUNT_ID secrets are not set, so the Cloudflare Pages deploy is skipped. Tests still ran and passed. Add both secrets under Settings, Secrets and variables, Actions to enable deploys."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Assemble the site files
+        if: steps.cf.outputs.ready == 'true'
+        run: |
+          mkdir -p _site
+          cp index.html patterns.json _site/
+
+      - name: Deploy to Cloudflare Pages
+        if: steps.cf.outputs.ready == 'true'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy _site --project-name=sreadle --branch=main
