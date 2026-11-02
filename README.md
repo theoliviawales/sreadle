@@ -36,8 +36,13 @@ how a rhythm becomes official for all players (see `DEPLOYMENT.md`).
 ## Files
 
 - `index.html`: the entire game, self-contained (no build step).
-- `DEPLOYMENT.md`: the plan for hosting it publicly, starting with free
-  GitHub Pages.
+- `patterns/day-001.json` to `day-010.json`: the authored rhythms as data
+  files; `patterns.json` is built from them by `scripts/build-patterns.mjs`.
+  Publish a new day with `node scripts/publish-pattern.mjs export.json N`.
+- `tests/`: the automated test suite, run with `npm test` (Node only, no
+  dependencies). CI runs it, plus the patterns build, on every push.
+- `DEPLOYMENT.md`: the plan for hosting it publicly, now on Cloudflare
+  Pages with automated deploys from GitHub Actions.
 
 ## Play it locally
 

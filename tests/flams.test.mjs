@@ -1,0 +1,41 @@
+/* Flam rules from the design: Days 1 to 8 have no flams, Days 9 and 10 have
+   at most 2 each, and a generated day has at most 1. Counts are taken from
+   the compiled charts (a flam is a flag on the main note) and, for the
+   authored days, cross-checked against patterns.json. */
+
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { loadGame } from '../scripts/lib/load-game.mjs';
+import { countFlams } from '../scripts/lib/validate.mjs';
+
+const root = join(dirname(fileURLToPath(import.meta.url)), '..');
+const game = loadGame(join(root, 'index.html'));
+const patternsJson = JSON.parse(readFileSync(join(root, 'patterns.json'), 'utf8'));
+
+function chartFlams(def) {
+  return game.buildChart(def.measures).notes.filter(n => n.flam).length;
+}
+
+test('flams: embedded days 1 to 8 have none, days 9 and 10 have at most 2', async (t) => {
+  for (let i = 0; i < 10; i++) {
+    const day = i + 1;
+    await t.test(`day ${day}`, () => {
+      const count = chartFlams(game.DAYS[i]);
+      if (day <= 8) assert.equal(count, 0, `day ${day}: expected no flams, found ${count}`);
+      else assert.ok(count <= 2, `day ${day}: expected at most 2 flams, found ${count}`);
+      assert.equal(countFlams(patternsJson[String(day)]), count, `day ${day}: patterns.json flam count differs from index.html`);
+    });
+  }
+});
+
+test('flams: generated days have at most 1 (sampled days 11 to 80)', async (t) => {
+  for (let n = 11; n <= 80; n++) {
+    await t.test(`day ${n}`, () => {
+      const count = chartFlams(game.generateDay(n));
+      assert.ok(count <= 1, `generated day ${n}: expected at most 1 flam, found ${count}`);
+    });
+  }
+});
