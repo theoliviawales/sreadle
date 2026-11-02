@@ -856,6 +856,7 @@ function songBeatNow(){ if(!playing && !finished) return -COUNTIN; return (perfo
 
 /* ---------- day selection & archive ---------- */
 function loadDay(n){
+  if(!(n>=1) || n>todayNum) n=todayNum; /* future days stay hidden until their day arrives */
   selectedDay=n; dayDef=getDay(n); chart=buildChart(dayDef.measures);
   notes=chart.notes; rests=chart.rests; groups=chart.groups; buildOnsets();
   counts={perfect:0,great:0,good:0,miss:0}; combo=0; bestCombo=0; extraTaps=0; weighted=0;
@@ -871,7 +872,7 @@ function loadDay(n){
 }
 function renderArchive(){
   var wrap=document.getElementById('archiveList'); wrap.innerHTML='';
-  var maxDay=Math.max(10,todayNum);
+  var maxDay=todayNum; /* only days that have arrived are listed: today and earlier */
   for(var n=1;n<=maxDay;n++){
     (function(n){
       var def=getDay(n);
