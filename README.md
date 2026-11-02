@@ -17,6 +17,10 @@ percentage, and a streak to keep alive.
   the puzzle number, so the daily rhythm is identical for every player with
   no server.
 - The metronome clicks on every beat for the whole round.
+- Each daily puzzle allows 2 attempts; after that it locks and keeps your
+  best result. The results screen shares Wordle-style text (accuracy, score,
+  per-measure squares) with a deep link to that day's puzzle, for example
+  `https://theoliviawales.github.io/sreadle/?day=4`.
 - Stats (streak, best scores) are stored only in your browser's localStorage.
 
 ## Creating rhythms (admin page)

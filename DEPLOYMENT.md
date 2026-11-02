@@ -98,10 +98,20 @@ load. Neither is needed for a single admin working from one phone.
   America/Los_Angeles, so a new Sreadle appears at midnight Pacific for
   everyone. This is a deliberate choice (it is the home timezone); document it
   on the page so players are not surprised.
-- **Share results**: the in-game "Copy results" button produces Wordle-style
-  text (puzzle number, accuracy, score, per-measure squares). Add Open Graph
+- **Share results**: the results screen's Share button (native share sheet on
+  phones, clipboard fallback) produces Wordle-style text: puzzle number,
+  accuracy, score, best combo, which attempt it was, per-measure
+  green/yellow/red squares, and a deep link to that exact puzzle,
+  `https://theoliviawales.github.io/sreadle/?day=N`. The page reads the
+  `?day=N` parameter on load and opens that puzzle directly. Add Open Graph
   meta tags and a 1200x630 share image so links pasted into chats and social
   apps unfurl with a title and picture.
+- **Attempts**: each daily puzzle allows exactly 2 attempts per player,
+  stored per puzzle in localStorage; after the second attempt the puzzle
+  locks and shows the player's best result. Attempts are a client-side
+  honor-system rule (a determined player can clear site data), which matches
+  how Wordle-style games treat their limits; only a backend with accounts
+  could enforce it harder, and that is deliberately out of scope.
 - **Add to home screen**: add a web app manifest and an icon so the site
   installs like an app on phones. No app store, no review process.
 - **Analytics (privacy-friendly)**: Cloudflare Web Analytics or Plausible, a
