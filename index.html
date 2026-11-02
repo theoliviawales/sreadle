@@ -308,26 +308,7 @@ body.playing #tapPad{order:9;flex:1 1 auto;min-height:104px;margin-top:auto;disp
 
 <main>
   <div id="gameView">
-  <div class="puzzle-card">
-    <div class="pz-top">
-      <div>
-        <div class="t" id="todayTitle">Today: Sreadle #1</div>
-        <div class="d" id="todaySub">A new rhythm unlocks every day at midnight, Seattle time.</div>
-        <div class="d" id="todayAttempts">Attempts left for today's puzzle: 2 of 2</div>
-      </div>
-      <span id="attemptDots" title="Attempts remaining" aria-label="Attempts remaining">●●</span>
-    </div>
-    <div class="meta"><span id="metaDay">Sreadle <b>#1</b></span><span id="metaDate"><b>Mon, Nov 2, 2026</b></span><span>♩ = <b id="metaBpm">67</b> BPM</span><span><b>4/4</b> · <span id="metaMeasures">8</span> measures</span><span><b id="metaNotes">99</b> notes</span></div>
-    <p class="pz-blurb" id="dayBlurb">Day 1 is the original Level 8 exercise from the reel: the first two measures are the reel's own sheet music, quintuplet, sextuplet, septuplet and all.</p>
-    <button id="todayBtn" type="button">↺ Jump to today's puzzle</button>
-  </div>
-
   <div class="controls" aria-label="Game controls">
-    <div class="seg" role="group" aria-label="Speed">
-      <button type="button" data-speed="0.75" aria-pressed="false">0.75×</button>
-      <button type="button" data-speed="1" aria-pressed="true">1×</button>
-      <button type="button" data-speed="1.25" aria-pressed="false">1.25×</button>
-    </div>
     <button id="metroBtn" type="button" aria-pressed="true">Metronome <span class="on" id="metroState">ON</span></button>
     <button id="startBtn" type="button">▶ Start Day 1 · Count-in</button>
   </div>
@@ -404,23 +385,7 @@ body.playing #tapPad{order:9;flex:1 1 auto;min-height:104px;margin-top:auto;disp
   <div class="archive" id="archiveList" role="group" aria-label="Archive of past days"></div>
   </div>
 
-  <details>
-    <summary>About this rhythm</summary>
-    <div id="dayDetail"><p>Day 1 · 67 BPM · the reel's Level 8 exercise.</p></div>
-    <button id="editDayBtn" type="button" class="mini-btn">✎ Edit this day in the creator</button>
-  </details>
-
-  <details>
-    <summary>How the daily puzzle works</summary>
-    <ul>
-      <li><b>Day 1 was Monday, November 2, 2026.</b> The puzzle number is the number of days since then, plus one, worked out from the date in America/Los_Angeles, so everyone rolls over at the same moment.</li>
-      <li><b>Days 1 to 10 are hand-composed</b> and stored in the page: tuplets, dotted figures, syncopation and rests, each measure summing to exactly four beats.</li>
-      <li><b>Day 11 onward is generated in your browser</b> from a seeded random generator keyed to the puzzle number. Same number, same rhythm, on every device. Tempo lands between 60 and 74 BPM and the patterns trend denser over time.</li>
-      <li><b>Stats live on this device only</b> (days played, streak, best score per day), kept in your browser the way a daily game should feel personal without an account.</li>
-    </ul>
-  </details>
-
-  <footer>Sreadle began as a faithful recreation of the Glisso-style rhythm sightreading reel: a single-line staff, a fixed amber playhead, and no pitch to hide behind, only time. Now it shows up every day.<br><br>Privacy: your stats live only in this browser. When a daily attempt ends, the game sends one anonymous count (puzzle number, attempt, and a coarse accuracy band) so daily totals can be published in aggregate. No cookies, no accounts, no identifiers, nothing that can point back to you.</footer>
+  <footer>Privacy: your stats live only in this browser. No cookies, no accounts, no identifiers, nothing that can point back to you.</footer>
   </div><!-- /gameView -->
 
   <section id="adminView" hidden>
@@ -898,13 +863,6 @@ function loadDay(n){
   mercyDecided=false; pendingSlowAid=false; runSlowAid=false;
   var mbEl=document.getElementById('mercyBanner'); if(mbEl) mbEl.classList.remove('on');
   document.getElementById('results').classList.remove('on');
-  document.getElementById('metaDay').innerHTML='Sreadle <b>#'+n+'</b>';
-  document.getElementById('metaDate').innerHTML='<b>'+dateLabelFor(n)+'</b>';
-  document.getElementById('metaBpm').textContent=dayDef.bpm;
-  document.getElementById('metaMeasures').textContent=chart.measures;
-  document.getElementById('metaNotes').textContent=notes.length;
-  document.getElementById('dayBlurb').textContent=dayDef.blurb;
-  document.getElementById('dayDetail').innerHTML=dayDef.detail;
   document.getElementById('startBtn').textContent='▶ Start Day '+n+' · Count-in';
   document.getElementById('measureLabel').textContent='Measure – / '+chart.measures;
   document.getElementById('progBar').style.width='0%';
@@ -1182,12 +1140,6 @@ function startGame(){
 
 /* ---------- wiring ---------- */
 var segBtns=document.querySelectorAll('.seg button');
-segBtns.forEach(function(btn){ btn.addEventListener('click',function(){
-  if(playing) return;
-  segBtns.forEach(function(x){x.setAttribute('aria-pressed','false');});
-  btn.setAttribute('aria-pressed','true'); speed=parseFloat(btn.getAttribute('data-speed'));
-  document.getElementById('speedInd').textContent='×'+(speed===1?'1':speed);
-});});
 var metroBtn=document.getElementById('metroBtn');
 metroBtn.addEventListener('click',function(){
   metroOn=!metroOn;
@@ -1207,13 +1159,6 @@ document.getElementById('mercyFullBtn').addEventListener('click',function(){
 });
 document.getElementById('startBtn').addEventListener('click',startGame);
 document.getElementById('againBtn').addEventListener('click',function(){ window.scrollTo({top:0,behavior:'smooth'}); startGame(); });
-document.getElementById('todayBtn').addEventListener('click',function(){
-  if(playing) return;
-  if(selectedDay!==todayNum) loadDay(todayNum);
-  window.scrollTo({top:0,behavior:'smooth'});
-  if(isLocked(todayNum)){ document.getElementById('feedback').textContent='Today\u2019s puzzle is locked: both attempts are used.'; return; }
-  startGame();
-});
 document.getElementById('shareBtn').addEventListener('click',function(){ if(lastShareText) shareResult(lastShareText,this); });
 document.getElementById('shareBestBtn').addEventListener('click',function(){
   var rec=stats.days[selectedDay];
@@ -1468,13 +1413,6 @@ function playCustom(def,label){
   chart=buildChart(def.measures); notes=chart.notes; rests=chart.rests; groups=chart.groups; buildOnsets();
   finished=false;
   document.getElementById('results').classList.remove('on');
-  document.getElementById('metaDay').innerHTML='<b>'+label+'</b>';
-  document.getElementById('metaDate').innerHTML='<b>Custom rhythm</b>';
-  document.getElementById('metaBpm').textContent=def.bpm;
-  document.getElementById('metaMeasures').textContent=chart.measures;
-  document.getElementById('metaNotes').textContent=notes.length;
-  document.getElementById('dayBlurb').textContent=def.blurb||'';
-  document.getElementById('dayDetail').innerHTML=def.detail||'';
   document.getElementById('measureLabel').textContent='Measure – / '+chart.measures;
   document.getElementById('progBar').style.width='0%';
   renderArchive(); updateHUD(); updateAttemptsUI();
@@ -1643,15 +1581,6 @@ document.getElementById('importBtn').addEventListener('click',function(){
   im.textContent='Imported \u201C'+clean.name+'\u201D into My rhythms.'+(clean.day?' Day '+clean.day+' now uses it on this device.':'');
   im.className='ed-msg ed-ok';
 });
-document.getElementById('editDayBtn').addEventListener('click',function(){
-  if(playing) return;
-  var def=dayDef;
-  var entry={name: selectedDay>=1 ? 'Day '+selectedDay+' remix' : (def.title||'Custom rhythm'), bpm:def.bpm, measures:chartToElements(def)};
-  loadIntoEditor(entry);
-  location.hash='#/admin';
-  applyRoute();
-});
-
 /* ---------- routing ---------- */
 function applyRoute(){
   var admin=location.hash==='#/admin';
@@ -1796,8 +1725,6 @@ function updateCountdown(){
 }
 
 /* ---------- init ---------- */
-document.getElementById('todayTitle').textContent='Today: Sreadle #'+todayNum;
-document.getElementById('todaySub').textContent=dateLabelFor(todayNum)+' · a new rhythm unlocks every day at midnight, Seattle time.';
 resizeCanvas();
 loadDay(initialDay);
 renderStats();
