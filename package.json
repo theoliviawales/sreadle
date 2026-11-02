@@ -5,7 +5,7 @@
   "description": "Sreadle (Sight Readle): a daily rhythm sight-reading game.",
   "type": "module",
   "scripts": {
-    "test": "node --test tests/",
+    "test": "node --test tests/*.test.mjs",
     "build:patterns": "node scripts/build-patterns.mjs",
     "publish": "node scripts/publish-pattern.mjs"
   }
