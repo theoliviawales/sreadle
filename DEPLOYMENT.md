@@ -20,29 +20,43 @@ Sreadle is a fully static, client-side web game:
 Because there is no server logic, deployment is just "put one HTML file on a
 static host." Everything below follows from that.
 
-## Recommended path: Cloudflare Pages
+## Live hosting: Cloudflare Pages
 
-The game launched on GitHub Pages and now moves to Cloudflare Pages, which
-is still free and adds room for the aggregate stats endpoint later.
+The game is live at **https://sreadle.pages.dev**, hosted on Cloudflare
+Pages (moved from GitHub Pages on November 2, 2026; the GitHub Pages copy
+at `https://theoliviawales.github.io/sreadle/` still updates from the same
+repository and works as a mirror).
 
-1. **Repository** (done): `github.com/theoliviawales/sreadle`, public, `main`
+1. **Repository**: `github.com/theoliviawales/sreadle`, public, `main`
    branch. The game ships as `index.html` at the repository root.
-2. **Deploys are automated**: the GitHub Actions workflow in
-   `.github/workflows/ci.yml` validates the patterns, runs the test suite,
-   and on pushes to `main` deploys `index.html` plus `patterns.json` to
-   Cloudflare Pages with wrangler. The deploy step needs two repository
-   secrets, `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`. Until both
-   are set, the deploy step logs a clear notice and skips itself, so pushes
-   stay green and the GitHub Pages copy remains the live one.
+2. **Deploys are automated by Cloudflare's Git integration**: the Pages
+   project `sreadle` is connected to the repository, and every push to
+   `main` builds and deploys automatically (no build command, output
+   directory `/`). The GitHub Actions workflow in `.github/workflows/ci.yml`
+   is the quality gate only: it validates the patterns, checks that
+   `patterns.json` is fresh, and runs the full test suite (128 tests).
 3. **Verify**: open the URL on a phone and a desktop browser, play a full
    round, confirm audio starts after the first tap (mobile browsers require
    a user gesture for WebAudio), and confirm the displayed puzzle number
    matches the current date in America/Los_Angeles.
-4. **Updates**: any push to `main` redeploys automatically once the secrets
-   are in place.
+4. **Updates**: push to `main`; Cloudflare redeploys within about a minute.
 
 Cost: $0. HTTPS is automatic. Uptime and bandwidth are more than sufficient
 for a daily-game audience.
+
+## Aggregate stats (live)
+
+The game sends an anonymous beacon after a finished or abandoned round and
+after a share, to `POST /api/stats`, served by the Pages Function in
+`functions/api/stats.js`. The function stores only running counters per
+puzzle day in the D1 database `sreadle-stats` (bound as `STATS` in
+`wrangler.toml`): plays, completions, abandons, shares, attempt 1 versus 2,
+and four accuracy bands. No IP addresses, user agents, cookies, timestamps,
+or per-player records are stored, and the endpoint rejects anything outside
+its allowlist. Read the totals any time at `GET /api/stats` or in the
+Cloudflare dashboard under D1. The endpoint's validation and counter logic
+is covered by unit tests (`tests/stats.test.mjs`); the live read path and
+the database binding were verified at launch on November 2, 2026.
 
 ## Custom domain (optional, recommended once it has players)
 
