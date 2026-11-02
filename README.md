@@ -23,7 +23,8 @@ percentage, and a streak to keep alive.
 
 The game includes a phone-friendly admin page (the Create/Admin button in the
 game, hash route `#/admin`) for composing new rhythms: pick durations and
-tuplets (3, 5, 6, 7), flip notes to rests, dot notes, preview with real
+tuplets (3, 5, 6, 7), flip notes to rests, dot notes, add flams (a grace note
+just before a main note, played as two quick taps), preview with real
 notation, and test-play before saving. Saved rhythms stay in the browser;
 exporting one as JSON and adding it to the authored data in `index.html` is
 how a rhythm becomes official for all players (see `DEPLOYMENT.md`).

@@ -60,7 +60,10 @@ phone:
 - Build a 4/4 measure element by element: duration chips (half, dotted
   quarter, quarter, dotted eighth, eighth, sixteenth), a Note/Rest toggle so
   any beat can be removed and turned into a rest, a Dot modifier, and a
-  tuplet tool for groups of 3, 5, 6, and 7 in a beat.
+  tuplet tool for groups of 3, 5, 6, and 7 in a beat, plus a Flam toggle for
+  single notes: a flammed note is drawn with a small grace note just before
+  it, and in the game it is played as two quick taps, the grace tap about
+  0.11 seconds ahead of the main note, with both taps judged.
 - A live beats counter (x / 4) and the game's own notation renderer show the
   measure as it is built; tapping a note in the preview flips it to a rest,
   dots it where the math stays valid, or deletes it. Measures can be added
