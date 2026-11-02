@@ -1,0 +1,1567 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<meta name="color-scheme" content="light dark" />
+<link rel="icon" href="data:," />
+<title>Sreadle: Sight Readle, a daily rhythm sight-reading game</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800;900&family=IBM+Plex+Mono:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#e9ebe6; --panel:#ffffff; --ink:#15171c; --muted:#5f665f; --line:#d8dcd4;
+  --header:#14161b; --header-ink:#f7f3e8; --amber:#f5b301; --amber-dark:#c98f00;
+  --green:#159947; --red:#d92d20; --blue:#2563eb; --tap:#191b21; --tap-ink:#fff;
+  --chip:#eef0ea;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#101216; --panel:#1b1e24; --ink:#f2f1ec; --muted:#a7ada5; --line:#2e323a; --chip:#262a31; --tap:#f5b301; --tap-ink:#151200; }
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{font-family:Archivo,system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:var(--ink);touch-action:manipulation;overscroll-behavior:none}
+body.playing{overflow:hidden; touch-action:none}
+button{font:inherit}
+header{background:var(--header);color:var(--header-ink);padding:18px 18px 16px;border-bottom:4px solid var(--amber)}
+header .wrap, main{max-width:980px;margin:0 auto}
+header h1{margin:0;font-size:clamp(30px,8vw,48px);line-height:.95;letter-spacing:-.03em;font-weight:900}
+header h1 .accent{color:var(--amber)}
+header .sub{margin:6px 0 0;font-size:15px;font-weight:800;color:#e8e6da}
+header p{margin:8px 0 0;color:#c9cbc2;font-size:14px;line-height:1.45;max-width:640px}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.meta span{font-family:"IBM Plex Mono",monospace;font-size:12px;font-weight:700;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);padding:6px 9px;border-radius:999px}
+.meta span b{color:var(--amber)}
+main{padding:14px 14px 30px}
+.instructions{font-size:15px;line-height:1.5;margin:2px 2px 12px}
+.instructions strong{color:var(--ink)}
+.note-line{font-size:13px;color:var(--muted);line-height:1.5;margin:0 2px 14px}
+.today-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:12px}
+.today-row .t{font-weight:900;font-size:16px}
+.today-row .d{color:var(--muted);font-size:13px;font-weight:600}
+#todayBtn{margin-left:auto;border:0;border-radius:10px;background:var(--ink);color:var(--bg);font-weight:900;font-size:14px;padding:11px 14px;cursor:pointer}
+@media (prefers-color-scheme: dark){ #todayBtn{background:var(--amber);color:#171200} }
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.stats-row .cell{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px;text-align:center}
+.stats-row .v{font-family:"IBM Plex Mono",monospace;font-size:24px;font-weight:700;line-height:1.05}
+.stats-row .l{font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);font-weight:800;margin-top:3px}
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:stretch;margin-bottom:12px}
+.seg{display:flex;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.seg button{border:0;background:transparent;color:var(--muted);padding:12px 13px;font-weight:800;cursor:pointer;min-width:58px}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+@media (prefers-color-scheme: dark){ .seg button[aria-pressed="true"]{background:var(--amber);color:#171200} }
+#metroBtn{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:12px;padding:12px 13px;font-weight:800;cursor:pointer}
+#metroBtn .on{color:var(--green)}
+#startBtn{flex:1;min-width:170px;border:0;border-radius:12px;background:var(--amber);color:#191200;font-weight:900;font-size:17px;padding:13px 16px;cursor:pointer;box-shadow:0 3px 0 var(--amber-dark)}
+#startBtn:active{transform:translateY(2px);box-shadow:none}
+#startBtn:disabled{opacity:.65}
+.hud{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px}
+.hud .cell{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 10px 9px;min-width:0}
+.hud .label{font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);font-weight:800;white-space:nowrap;overflow:hidden}
+.hud .value{font-family:"IBM Plex Mono",monospace;font-size:clamp(19px,5vw,30px);font-weight:700;line-height:1.05;white-space:nowrap}
+.hud .value small{font-size:13px;color:var(--muted)}
+.staff-card{background:#fff;color:#111;border-radius:16px;border:1px solid var(--line);overflow:hidden;position:relative;box-shadow:0 10px 30px rgba(0,0,0,.08)}
+.staff-top{display:flex;justify-content:space-between;align-items:center;padding:10px 14px 0;font-family:"IBM Plex Mono",monospace;font-size:12px;font-weight:700;color:#444}
+.staff-top .speed-ind{color:#8a6d00;background:#fff3c4;border:1px solid #f0d36a;padding:3px 7px;border-radius:999px}
+canvas#staff{display:block;width:100%;height:190px}
+@media (max-width:520px){ canvas#staff{height:172px} }
+.judge-pop{position:absolute;left:22%;top:22px;transform:translateX(-50%);font-weight:900;font-size:28px;letter-spacing:-.02em;opacity:0;pointer-events:none;text-shadow:0 2px 0 #fff}
+.judge-pop.show{animation:pop .55s ease-out}
+@keyframes pop{0%{opacity:0;transform:translateX(-50%) scale(.8)}20%{opacity:1;transform:translateX(-50%) scale(1.08)}100%{opacity:0;transform:translateX(-50%) translateY(-10px) scale(1)}}
+.countin{position:absolute;inset:0;display:none;place-items:center;background:rgba(255,255,255,.72);font-weight:900;font-size:64px;color:#111}
+.countin.on{display:grid}
+.progress-row{display:flex;align-items:center;gap:10px;margin:12px 2px 12px}
+.progress{flex:1;height:10px;background:var(--chip);border:1px solid var(--line);border-radius:999px;overflow:hidden}
+.progress i{display:block;height:100%;width:0%;background:var(--amber)}
+#measureLabel{font-family:"IBM Plex Mono",monospace;font-size:13px;font-weight:700;white-space:nowrap}
+#tapPad{width:100%;min-height:172px;border:0;border-radius:18px;background:var(--tap);color:var(--tap-ink);cursor:pointer;touch-action:none;user-select:none;-webkit-user-select:none;padding:18px;position:relative;overflow:hidden}
+#tapPad .big{display:block;font-size:clamp(34px,10vw,56px);font-weight:900;letter-spacing:.04em;line-height:1}
+#tapPad .sub{display:block;margin-top:8px;font-size:14px;opacity:.75;font-weight:600}
+#tapPad.hit{filter:brightness(1.35)}
+#tapPad:active{transform:scale(.995)}
+.feedback{min-height:26px;text-align:center;font-weight:800;margin-top:10px;font-size:15px}
+.feedback .perfect{color:var(--green)} .feedback .extra{color:var(--red)}
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.legend span{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:7px 10px;font-size:12.5px;font-weight:700}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:1px}
+.results{display:none;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px;margin-top:16px;text-align:center}
+.results.on{display:block}
+.results .dayline{font-size:12px;letter-spacing:.1em;text-transform:uppercase;font-weight:900;color:var(--muted)}
+.results .acc{font-family:"IBM Plex Mono",monospace;font-size:clamp(56px,16vw,92px);font-weight:700;line-height:1}
+.results .grade{font-weight:900;font-size:20px;margin-top:4px}
+.results .score{font-size:17px;margin-top:6px;color:var(--muted);font-weight:700}
+.results .squares{font-size:22px;letter-spacing:2px;margin-top:10px}
+.counts{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:18px 0}
+.counts div{background:var(--chip);border-radius:12px;padding:12px 6px}
+.counts b{display:block;font-family:"IBM Plex Mono",monospace;font-size:24px}
+.counts span{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.res-btns{display:grid;gap:8px}
+#shareBtn{border:0;background:var(--ink);color:var(--bg);font-weight:900;font-size:16px;padding:14px 22px;border-radius:12px;cursor:pointer;width:100%}
+@media (prefers-color-scheme: dark){ #shareBtn{background:var(--amber);color:#171200} }
+#againBtn{border:0;background:var(--amber);color:#191200;font-weight:900;font-size:16px;padding:14px 22px;border-radius:12px;cursor:pointer;width:100%;box-shadow:0 3px 0 var(--amber-dark)}
+h2.sec{font-size:19px;font-weight:900;letter-spacing:-.01em;margin:22px 2px 4px}
+p.sec-d{font-size:13.5px;color:var(--muted);line-height:1.5;margin:0 2px 10px}
+.archive{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px}
+.day-btn{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:12px;padding:11px 10px;cursor:pointer;text-align:left}
+.day-btn .dn{font-weight:900;font-size:16px;display:flex;justify-content:space-between;align-items:center}
+.day-btn .dm{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--muted);font-weight:700;margin-top:3px;display:block}
+.day-btn .today-tag{font-size:10px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;color:#8a6d00;background:#fff3c4;border:1px solid #f0d36a;padding:2px 6px;border-radius:999px;margin-top:6px;display:inline-block}
+.day-btn[aria-pressed="true"]{outline:3px solid var(--amber);outline-offset:0}
+.day-btn .check{color:var(--green);font-weight:900}
+.day-btn .best{font-size:11px;color:var(--muted);font-weight:700;margin-top:2px;display:block}
+details{margin-top:16px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+details summary{font-weight:900;cursor:pointer}
+details ul, details ol{margin:10px 0 2px;padding-left:19px;line-height:1.6;font-size:14px;color:var(--muted)}
+details b{color:var(--ink)}
+details p{font-size:14px;color:var(--muted);line-height:1.6}
+details pre{background:var(--chip);border:1px solid var(--line);border-radius:10px;padding:12px;overflow-x:auto;font-family:"IBM Plex Mono",monospace;font-size:12.5px;line-height:1.55;color:var(--ink);white-space:pre}
+footer{font-size:12.5px;color:var(--muted);line-height:1.5;margin-top:14px;padding:0 2px}
+.attempt-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:-4px 2px 12px}
+.attempt-row #attemptsInfo{font-weight:900;font-size:14.5px}
+.attempt-row .mini-btn{margin-top:0}
+.create-link{display:inline-block;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:10px;font-weight:900;font-size:14px;padding:11px 14px;text-decoration:none}
+.mini-btn{margin-top:10px;border:1px solid var(--line);background:var(--chip);color:var(--ink);border-radius:10px;font-weight:800;font-size:14px;padding:11px 14px;cursor:pointer;min-height:48px}
+/* ----- admin / rhythm creator ----- */
+#adminView h2{font-size:26px;font-weight:900;letter-spacing:-.02em;margin:4px 2px 2px}
+#adminView .backlink{font-weight:800;font-size:15px;color:var(--blue);text-decoration:none;display:inline-block;padding:8px 2px}
+.abtn{min-height:52px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--ink);font-weight:900;font-size:15px;cursor:pointer;padding:10px 14px}
+.abtn.primary{background:var(--amber);color:#191200;border:0;box-shadow:0 3px 0 var(--amber-dark)}
+.abtn.dark{background:var(--ink);color:var(--bg);border:0}
+@media (prefers-color-scheme: dark){ .abtn.dark{background:var(--amber);color:#171200} }
+.abtn:disabled{opacity:.45;cursor:default}
+.abtn:active{transform:translateY(1px)}
+.fld{margin-bottom:10px}
+.fld label{display:block;font-size:12px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin:0 2px 5px}
+.txtin{width:100%;padding:13px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--ink);font-size:16px;font-weight:600;font-family:inherit}
+textarea.code{width:100%;min-height:92px;padding:11px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--ink);font-family:"IBM Plex Mono",monospace;font-size:12px;line-height:1.5}
+.meas-nav{display:flex;gap:8px;align-items:stretch;margin:12px 0 8px}
+.meas-nav .lbl{flex:1;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:6px}
+.beat-counter{font-family:"IBM Plex Mono",monospace;font-size:23px;font-weight:700;text-align:center;padding:13px;border-radius:12px;background:var(--panel);border:2px solid var(--line);margin-bottom:6px}
+.beat-counter.full{border-color:var(--green);color:var(--green)}
+.ed-msg{min-height:24px;color:var(--red);font-weight:700;font-size:14.5px;text-align:center;padding:2px 4px}
+.ed-ok{color:var(--green)}
+canvas#edCanvas{width:100%;height:132px;display:block;background:#fff;border:1px solid var(--line);border-radius:12px}
+.ed-hint{font-size:12.5px;color:var(--muted);text-align:center;margin:6px 0 12px;font-weight:600}
+.chip-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.chip{min-height:60px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--ink);font-weight:900;font-size:17px;cursor:pointer;padding:9px}
+.chip small{display:block;font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--muted);font-weight:700;margin-top:2px}
+.chip:active{transform:translateY(1px)}
+.toggle-row{display:flex;gap:8px;margin-bottom:10px}
+.tgl{flex:1;min-height:54px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--muted);font-weight:900;font-size:16px;cursor:pointer}
+.tgl[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+@media (prefers-color-scheme: dark){ .tgl[aria-pressed="true"]{background:var(--amber);color:#171200} }
+.sel-info{text-align:center;font-weight:800;font-size:14.5px;min-height:22px;margin:4px 0 8px}
+.btn-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.btn-grid .wide{grid-column:1/-1}
+.lib-item{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:8px}
+.lib-item .ln{font-weight:900;font-size:16px}
+.lib-item .lm{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--muted);font-weight:700;margin-top:2px}
+.lib-item .daybadge{font-size:10.5px;font-weight:900;letter-spacing:.04em;text-transform:uppercase;color:#8a6d00;background:#fff3c4;border:1px solid #f0d36a;padding:2px 7px;border-radius:999px;margin-left:8px}
+.lib-btns{display:flex;gap:8px;margin-top:10px}
+.lib-btns .abtn{flex:1;min-height:48px;font-size:14px}
+@media (prefers-reduced-motion: reduce){ .judge-pop.show{animation:none;opacity:1} }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>Sreadle<span class="accent">.</span></h1>
+    <div class="sub">Sight Readle, a daily rhythm sight-reading game</div>
+    <p>One new rhythm every day. The notation scrolls under the amber playhead, the metronome clicks on every beat from count-in to the final barline, and all you have is time.</p>
+    <div class="meta"><span id="metaDay">Sreadle <b>#1</b></span><span id="metaDate"><b>Mon, Nov 2, 2026</b></span><span>♩ = <b id="metaBpm">67</b> BPM</span><span><b>4/4</b> · <span id="metaMeasures">8</span> measures</span><span><b id="metaNotes">99</b> notes</span></div>
+  </div>
+</header>
+
+<main>
+  <div id="gameView">
+  <div class="today-row">
+    <div>
+      <div class="t" id="todayTitle">Today: Sreadle #1</div>
+      <div class="d" id="todaySub">A new rhythm unlocks every day at midnight, Seattle time.</div>
+      <div class="d" id="todayAttempts">Attempts left for today's puzzle: 2 of 2</div>
+    </div>
+    <button id="todayBtn" type="button">▶ Play today's Sreadle</button>
+    <a class="create-link" href="#/admin">✎ Create</a>
+  </div>
+
+  <div class="stats-row" aria-label="Your stats">
+    <div class="cell"><div class="v" id="statPlayed">0</div><div class="l">Days played</div></div>
+    <div class="cell"><div class="v" id="statStreak">0</div><div class="l">Day streak</div></div>
+    <div class="cell"><div class="v" id="statBest">—</div><div class="l">Best score</div></div>
+  </div>
+
+  <p class="instructions"><strong>Tap the pad, or press any key, exactly when a note crosses the yellow line.</strong> You get one full measure of metronome count-in first, and the metronome keeps clicking on every beat for the whole round, with an accent on each downbeat.</p>
+  <p class="note-line" id="dayBlurb">Day 1 is the original Level 8 exercise from the reel: the first two measures are the reel's own sheet music, quintuplet, sextuplet, septuplet and all.</p>
+  <p class="note-line">Sound tip: Sreadle asks your browser to play through silent mode on iPhone. If you still hear nothing, raise the volume or flip the side switch.</p>
+
+  <div class="controls" aria-label="Game controls">
+    <div class="seg" role="group" aria-label="Speed">
+      <button type="button" data-speed="0.75" aria-pressed="false">0.75×</button>
+      <button type="button" data-speed="1" aria-pressed="true">1×</button>
+      <button type="button" data-speed="1.25" aria-pressed="false">1.25×</button>
+    </div>
+    <button id="metroBtn" type="button" aria-pressed="true">Metronome <span class="on" id="metroState">ON</span></button>
+    <button id="startBtn" type="button">▶ Start Day 1 · Count-in</button>
+  </div>
+
+  <div class="attempt-row">
+    <span id="attemptsInfo">Attempts left: 2 of 2</span>
+    <button id="shareBestBtn" type="button" class="mini-btn" hidden>Share best result</button>
+  </div>
+
+  <div class="hud" aria-live="off">
+    <div class="cell"><div class="label">Score</div><div class="value"><span id="scoreVal">0</span><small>/1000</small></div></div>
+    <div class="cell"><div class="label">Accuracy</div><div class="value"><span id="accVal">—</span><small>%</small></div></div>
+    <div class="cell"><div class="label">Combo</div><div class="value"><span id="comboVal">0</span><small>×</small></div></div>
+    <div class="cell"><div class="label">Extra taps</div><div class="value" id="extraVal">0</div></div>
+  </div>
+
+  <section class="staff-card" aria-label="Scrolling rhythm notation">
+    <div class="staff-top"><span>𝄞 &nbsp;Rhythm only · stems up</span><span class="speed-ind" id="speedInd">×1</span></div>
+    <canvas id="staff" width="900" height="190"></canvas>
+    <div class="judge-pop" id="judgePop">PERFECT</div>
+    <div class="countin" id="countIn">4</div>
+  </section>
+
+  <div class="progress-row">
+    <div class="progress" aria-hidden="true"><i id="progBar"></i></div>
+    <div id="measureLabel">Measure – / 8</div>
+  </div>
+
+  <button id="quitBtn" type="button" class="mini-btn" hidden style="margin:0 0 10px">■ Quit run</button>
+  <button id="tapPad" type="button" aria-label="Tap pad">
+    <span class="big">TAP</span>
+    <span class="sub">Tap here · or press any key / spacebar on desktop</span>
+  </button>
+  <div class="feedback" id="feedback">Press Start, hear the count-in, then tap on the line.</div>
+
+  <div class="legend" aria-label="Judging windows">
+    <span><i class="dot" style="background:#159947"></i>Perfect ±45 ms</span>
+    <span><i class="dot" style="background:#65a30d"></i>Great ±90 ms</span>
+    <span><i class="dot" style="background:#d97706"></i>Good ±140 ms</span>
+    <span><i class="dot" style="background:#d92d20"></i>Miss / extra tap</span>
+    <span>Flam = two quick taps: the small grace note, then the beat</span>
+  </div>
+
+  <section class="results" id="results" aria-live="polite">
+    <div class="dayline" id="finalDayLine">Sreadle #1 · Final accuracy</div>
+    <div class="acc"><span id="finalAcc">0</span>%</div>
+    <div class="grade" id="finalGrade">Grade S</div>
+    <div class="score">Score <span id="finalScore">0</span> / 1000 · Best combo <span id="finalCombo">0</span>× · Extra taps <span id="finalExtra">0</span></div>
+    <div class="score" id="attemptNote"></div>
+    <div class="squares" id="finalSquares" aria-label="Accuracy by measure"></div>
+    <div class="counts">
+      <div><b id="cPerfect" style="color:var(--green)">0</b><span>Perfect</span></div>
+      <div><b id="cGreat">0</b><span>Great</span></div>
+      <div><b id="cGood">0</b><span>Good</span></div>
+      <div><b id="cMiss" style="color:var(--red)">0</b><span>Miss</span></div>
+    </div>
+    <div class="res-btns">
+      <button id="shareBtn" type="button">Share results</button>
+      <button id="againBtn" type="button">Play again</button>
+    </div>
+  </section>
+
+  <h2 class="sec">Earlier days</h2>
+  <p class="sec-d">Every past puzzle stays playable. Days 1 to 10 are hand-written; from Day 11 on, each day's rhythm is generated from its puzzle number, so it is the same for every player, forever, with no server involved. A ✓ means you have finished that day.</p>
+  <div class="archive" id="archiveList" role="group" aria-label="Archive of past days"></div>
+
+  <details>
+    <summary>About this rhythm</summary>
+    <div id="dayDetail"><p>Day 1 · 67 BPM · the reel's Level 8 exercise.</p></div>
+    <button id="editDayBtn" type="button" class="mini-btn">✎ Edit this day in the creator</button>
+  </details>
+
+  <details>
+    <summary>How the daily puzzle works</summary>
+    <ul>
+      <li><b>Day 1 was Monday, November 2, 2026.</b> The puzzle number is the number of days since then, plus one, worked out from the date in America/Los_Angeles, so everyone rolls over at the same moment.</li>
+      <li><b>Days 1 to 10 are hand-composed</b> and stored in the page: tuplets, dotted figures, syncopation and rests, each measure summing to exactly four beats.</li>
+      <li><b>Day 11 onward is generated in your browser</b> from a seeded random generator keyed to the puzzle number. Same number, same rhythm, on every device. Tempo lands between 60 and 74 BPM and the patterns trend denser over time.</li>
+      <li><b>Stats live on this device only</b> (days played, streak, best score per day), kept in your browser the way a daily game should feel personal without an account.</li>
+    </ul>
+  </details>
+
+  <details>
+    <summary>The plan: putting Sreadle online with GitHub Pages</summary>
+    <p>Sreadle is a single static <b>index.html</b>: no build step, no backend, no database. The daily puzzle is chosen by date and generated in the browser, so a plain static host is all it ever needs, and GitHub Pages is free.</p>
+    <ol>
+      <li><b>Create the repository.</b> On github.com, make a new public repository named <b>sreadle</b> (no template, no README needed). Or from the command line with the GitHub CLI: <b>gh repo create sreadle --public</b>.</li>
+      <li><b>Add the game.</b> Put this page in the repo root as <b>index.html</b> and push:</li>
+    </ol>
+    <pre>git init
+git add index.html
+git commit -m "Sreadle: daily rhythm sight-reading game"
+git branch -M main
+git remote add origin https://github.com/YOUR-USERNAME/sreadle.git
+git push -u origin main</pre>
+    <ol start="3">
+      <li><b>Turn on Pages.</b> In the repo: Settings → Pages → Build and deployment → Deploy from a branch → <b>main</b>, folder <b>/ (root)</b>, Save. Within a minute the game is live at <b>https://YOUR-USERNAME.github.io/sreadle/</b>.</li>
+      <li><b>Optional custom domain.</b> Buy a domain, add a file named <b>CNAME</b> containing it (for example sreadle.com) to the repo root, and point the domain's DNS at GitHub Pages per the Pages settings screen. HTTPS is automatic.</li>
+      <li><b>Daily content needs no work.</b> There is nothing to publish each morning: the page computes the puzzle number from the date, Days 1 to 10 are baked in, and later days generate themselves deterministically. Updating the game is just a commit and a push.</li>
+      <li><b>Publishing a rhythm you created:</b> in the in-game Rhythm creator, Export copies the rhythm as JSON (name, tempo, measures). To make it an official day for every player, paste that JSON into the <b>AUTHORED_RHYTHMS</b> table near the top of the script in index.html, keyed by its day number, then commit and push. Authored entries beat both the hand-written days and the generator, and the creator's "Edit this day" can reopen any day, built-in or generated, to tweak and re-export.</li>
+      <li><b>Later, if it grows:</b> add an <b>og:image</b> and social meta tags so shared results look good, split puzzles into a <b>puzzles.js</b> file if hand-writing more days, and add a service worker only if offline play becomes a goal. Accounts, leaderboards and synced stats would need a backend, which is the one thing this design deliberately avoids.</li>
+    </ol>
+  </details>
+
+  <footer>Sreadle began as a faithful recreation of the Glisso-style rhythm sightreading reel: a single-line staff, a fixed amber playhead, and no pitch to hide behind, only time. Now it shows up every day.</footer>
+  </div><!-- /gameView -->
+
+  <section id="adminView" hidden>
+    <a class="backlink" href="#">← Back to the game</a>
+    <h2>Rhythm creator</h2>
+    <p class="sec-d">Build a rhythm one measure at a time, test-play it in the real game, then save it to your library on this device. Set a day number when saving and that day's puzzle becomes your rhythm here.</p>
+
+    <div class="fld"><label for="edName">Rhythm name</label><input class="txtin" id="edName" type="text" maxlength="60" value="My rhythm" /></div>
+    <div class="fld"><label for="edBpm">Tempo (BPM)</label><input class="txtin" id="edBpm" type="number" min="30" max="200" step="1" value="67" inputmode="numeric" /></div>
+
+    <div class="meas-nav">
+      <button class="abtn" id="prevMeas" type="button">◀ Prev</button>
+      <div class="lbl" id="edMeasLabel">Measure 1 of 1</div>
+      <button class="abtn" id="nextMeas" type="button">Next ▶</button>
+    </div>
+    <div class="btn-grid">
+      <button class="abtn" id="addMeas" type="button">+ Add measure</button>
+      <button class="abtn" id="delMeas" type="button">Delete measure</button>
+    </div>
+
+    <div class="beat-counter" id="beatCounter">0 / 4 beats</div>
+    <div class="ed-msg" id="edMsg" role="status"></div>
+
+    <canvas id="edCanvas" width="900" height="132"></canvas>
+    <div class="ed-hint">Tap a note or rest in the preview to select it.</div>
+
+    <div class="toggle-row" role="group" aria-label="Note or rest">
+      <button class="tgl" id="modeNote" type="button" aria-pressed="true">♩ Note</button>
+      <button class="tgl" id="modeRest" type="button" aria-pressed="false">Rest</button>
+      <button class="tgl" id="dotTgl" type="button" aria-pressed="false">Dot ·</button>
+      <button class="tgl" id="flamTgl" type="button" aria-pressed="false">Flam</button>
+    </div>
+
+    <div class="chip-grid" id="durChips">
+      <button class="chip" type="button" data-dur="2">Half note<small data-eff>2 beats</small></button>
+      <button class="chip" type="button" data-dur="1">Quarter<small data-eff>1 beat</small></button>
+      <button class="chip" type="button" data-dur="0.5">Eighth<small data-eff>0.5 beats</small></button>
+      <button class="chip" type="button" data-dur="0.25">Sixteenth<small data-eff>0.25 beats</small></button>
+    </div>
+
+    <div class="fld"><label>Tuplet group (fills 1 beat)</label>
+      <div class="chip-grid" id="tupChips" style="grid-template-columns:repeat(4,1fr)">
+        <button class="chip" type="button" data-tup="3">3<small>triplet</small></button>
+        <button class="chip" type="button" data-tup="5">5<small>quintuplet</small></button>
+        <button class="chip" type="button" data-tup="6">6<small>sextuplet</small></button>
+        <button class="chip" type="button" data-tup="7">7<small>septuplet</small></button>
+      </div>
+    </div>
+
+    <div class="sel-info" id="selInfo">Nothing selected. Add notes above, or tap the preview.</div>
+    <div class="btn-grid">
+      <button class="abtn" id="flipBtn" type="button">Flip note / rest</button>
+      <button class="abtn" id="dotBtn" type="button">Toggle dot</button>
+      <button class="abtn" id="flamBtn" type="button">Flam on / off</button>
+      <button class="abtn" id="delElBtn" type="button">Delete element</button>
+      <button class="abtn" id="undoBtn" type="button">Undo</button>
+      <button class="abtn wide" id="clearMeasBtn" type="button">Clear measure</button>
+    </div>
+
+    <div class="btn-grid">
+      <button class="abtn primary wide" id="playDraftBtn" type="button">▶ Play preview in the game</button>
+    </div>
+
+    <h2 class="sec">Save this rhythm</h2>
+    <div class="fld"><label for="edDay">Day number (optional: makes this rhythm that day's puzzle on this device)</label><input class="txtin" id="edDay" type="number" min="1" max="9999" step="1" placeholder="Leave blank for a library rhythm" inputmode="numeric" /></div>
+    <div class="btn-grid"><button class="abtn dark wide" id="saveBtn" type="button">Save to My rhythms</button></div>
+    <div class="ed-msg" id="saveMsg" role="status"></div>
+
+    <h2 class="sec">My rhythms</h2>
+    <p class="sec-d">Saved on this device only. Play one in the game, reopen it here to edit, or delete it.</p>
+    <div id="libList"></div>
+
+    <h2 class="sec">Export / import</h2>
+    <p class="sec-d">Export copies this rhythm as JSON: name, tempo and every measure, in the same element format the creator and the game's authored days use. To publish a rhythm for every player, paste the exported JSON into the site's authored rhythms (see the deployment plan in the game view).</p>
+    <div class="btn-grid"><button class="abtn wide" id="exportBtn" type="button">Export this rhythm as JSON</button></div>
+    <div class="fld"><textarea class="code" id="exText" placeholder="Exported JSON appears here" spellcheck="false"></textarea></div>
+    <div class="fld"><label for="imText">Import a rhythm JSON</label><textarea class="code" id="imText" placeholder="Paste rhythm JSON here" spellcheck="false"></textarea></div>
+    <div class="btn-grid"><button class="abtn wide" id="importBtn" type="button">Import into My rhythms</button></div>
+    <div class="ed-msg" id="imMsg" role="status"></div>
+  </section>
+</main>
+
+<script>
+(function(){
+"use strict";
+var COUNTIN=4;
+var PX_PER_BEAT=148;
+var canvas=document.getElementById('staff'), ctx=canvas.getContext('2d');
+
+/* ---------- chart building ---------- */
+function makeHelpers(st){
+  var mb=st.mb;
+  function N(rel,dur,opts){ opts=opts||{}; var o={beat:mb+rel, rel:rel, measure:(mb/4)+1, dur:dur, dot:!!opts.dot, flam:!!opts.flam, graceState:'pending', state:'pending', judge:null, errMs:null, grouped:false, tuplet:opts.tuplet||null}; st.notes.push(o); return o; }
+  function R(rel,dur,kind){ st.rests.push({beat:mb+rel, dur:dur, kind:kind, measure:(mb/4)+1}); }
+  function G(list,beam,tuplet,stubs){ if(list.length<2) return list; list.forEach(function(n){n.grouped=true;}); st.groups.push({notes:list.slice(), beam:beam, tuplet:tuplet||null, stubs:stubs||[], measure:(mb/4)+1}); return list; }
+  var h={ n:N, r:R, g:G,
+    q:function(rel,opts){ return N(rel,1,opts); },
+    half:function(rel){ return N(rel,2); },
+    eighths:function(rel){ return G([N(rel,.5),N(rel+.5,.5)],'single'); },
+    s16:function(rel){ var a=[]; for(var i=0;i<4;i++) a.push(N(rel+i*.25,.25)); return G(a,'double'); },
+    trip:function(rel){ var a=[]; for(var i=0;i<3;i++) a.push(N(rel+i/3,1/3)); return G(a,'single',3); },
+    quin:function(rel){ var a=[]; for(var i=0;i<5;i++) a.push(N(rel+i*.2,.2)); return G(a,'double',5); },
+    sext:function(rel){ var a=[]; for(var i=0;i<6;i++) a.push(N(rel+i/6,1/6)); return G(a,'double',6); },
+    sept:function(rel){ var a=[]; for(var i=0;i<7;i++) a.push(N(rel+i/7,1/7)); return G(a,'double',7); },
+    dotFig:function(rel){ return G([N(rel,.75,{dot:true}),N(rel+.75,.25)],'single',null,[{t:'stub',i:1,d:'left'}]); },
+    figDot:function(rel){ return G([N(rel,.25),N(rel+.25,.75,{dot:true})],'single',null,[{t:'stub',i:0,d:'right'}]); },
+    sync:function(rel){ return G([N(rel,.25),N(rel+.25,.5),N(rel+.75,.25)],'single',null,[{t:'stub',i:0,d:'right'},{t:'stub',i:2,d:'left'}]); },
+    restLed:function(rel){ R(rel,.25,'sixteenth'); return G([N(rel+.25,.25),N(rel+.5,.5)],'single',null,[{t:'stub',i:0,d:'right'}]); },
+    sixGroup3:function(rel){ R(rel,.25,'sixteenth'); var a=[N(rel+.25,.25),N(rel+.5,.25),N(rel+.75,.25)]; return G(a,'double'); },
+    dotQtr:function(rel){ N(rel,1.5,{dot:true}); return N(rel+1.5,.5); },
+    qtrTrip:function(rel){ var a=[]; for(var i=0;i<3;i++) a.push(N(rel+i*(2/3),2/3)); return G(a,'single',3); },
+    quinWide:function(rel){ var a=[]; for(var i=0;i<5;i++) a.push(N(rel+i*.4,.4)); return G(a,'single',5); },
+    eighth2six:function(rel){ return G([N(rel,.5),N(rel+.5,.25),N(rel+.75,.25)],'single',null,[{t:'span',a:1,b:2}]); },
+    twoSixEighth:function(rel){ return G([N(rel,.25),N(rel+.25,.25),N(rel+.5,.5)],'single',null,[{t:'span',a:0,b:1}]); }
+  };
+  return h;
+}
+function buildChart(measureFns){
+  var st={notes:[],rests:[],groups:[],mb:0};
+  measureFns.forEach(function(fn,idx){ st.mb=idx*4; fn(makeHelpers(st)); });
+  return {notes:st.notes, rests:st.rests, groups:st.groups, measures:measureFns.length, totalBeats:measureFns.length*4};
+}
+
+/* ---------- the 10 hand-written days ---------- */
+var DAYS=[
+{ bpm:67, title:'Level 8, from the reel',
+  blurb:'Day 1 is the original Level 8 exercise from the reel: the first two measures are the reel\u2019s own sheet music, quintuplet, sextuplet, septuplet and all. Measures 3 to 8 keep the same traps coming.',
+  detail:'<p><b>Measure 1:</b> eighth rest, dotted quarter, sixteenth quintuplet, sixteenth rest into sixteenth + eighth. <b>Measure 2:</b> sextuplet, septuplet, then two beats of rest. <b>Measures 3 to 8:</b> sixteenth runs, eighth triplets, more quintuplets, a sextuplet, a septuplet, dotted figures and a final quarter to breathe out on. 99 notes.</p>',
+  measures:[
+    function(h){ h.r(0,.5,'eighth'); h.n(.5,1.5,{dot:true}); h.quin(2); h.restLed(3); },
+    function(h){ h.sext(0); h.sept(1); h.r(2,2,'half'); },
+    function(h){ h.s16(0); h.trip(1); h.quin(2); h.dotFig(3); },
+    function(h){ h.n(0,.5); h.r(.5,.25,'sixteenth'); h.n(.75,.25); h.sext(1); h.eighths(2); h.s16(3); },
+    function(h){ h.sixGroup3(0); h.trip(1); h.sext(2); h.r(3,.5,'eighth'); h.n(3.5,.5); },
+    function(h){ h.sept(0); h.s16(1); h.dotFig(2); h.trip(3); },
+    function(h){ h.eighths(0); h.quin(1); h.restLed(2); h.quin(3); },
+    function(h){ h.n(0,1.5,{dot:true}); h.n(1.5,.5); h.s16(2); h.q(3); }
+  ]},
+{ bpm:60, title:'Gentle on-ramp',
+  blurb:'Day 2 slows down to 60 BPM: quarters and eighths, dotted quarter + eighth figures, a rest right on a downbeat, and one friendly measure of sixteenths at the end.',
+  detail:'<p>Mostly eighth and quarter notes across 6 measures. Watch the quarter rest on the downbeat of measure 3, and save some focus for the sixteenths in the final measure.</p>',
+  measures:[
+    function(h){ h.q(0); h.q(1); h.eighths(2); h.q(3); },
+    function(h){ h.dotQtr(0); h.q(2); h.q(3); },
+    function(h){ h.r(0,1,'quarter'); h.q(1); h.eighths(2); h.q(3); },
+    function(h){ h.eighths(0); h.q(1); h.dotQtr(2); },
+    function(h){ h.half(0); h.q(2); h.q(3); },
+    function(h){ h.s16(0); h.eighths(1); h.q(2); h.q(3); }
+  ]},
+{ bpm:66, title:'Sixteenth focus',
+  blurb:'Day 3 is sixteenth-note day: full beats of sixteenths, dotted eighth + sixteenth pairs, and the sixteenth + eighth + sixteenth syncopation that loves to pull you early.',
+  detail:'<p>Six measures built from sixteenth cells. The last measure is sixteen sixteenths in a row, four beamed groups of four.</p>',
+  measures:[
+    function(h){ h.s16(0); h.s16(1); h.eighths(2); h.q(3); },
+    function(h){ h.dotFig(0); h.dotFig(1); h.s16(2); h.q(3); },
+    function(h){ h.sync(0); h.sync(1); h.s16(2); h.eighths(3); },
+    function(h){ h.s16(0); h.dotFig(1); h.figDot(2); h.q(3); },
+    function(h){ h.eighth2six(0); h.twoSixEighth(1); h.dotFig(2); h.q(3); },
+    function(h){ h.s16(0); h.s16(1); h.s16(2); h.s16(3); }
+  ]},
+{ bpm:63, title:'Triplet day',
+  blurb:'Day 4 belongs to triplets: eighth-note triplets (one with a rest in the middle), quarter-note triplets stretching across two beats, and triplet figures rubbing against straight eighths.',
+  detail:'<p>Six measures of threes against fours. The quarter-note triplets in measures 3 and 6 each span two full beats, so count the span, not the notes. In measure 2 the first triplet begs off its middle note to a rest.</p>',
+  measures:[
+    function(h){ h.trip(0); h.trip(1); h.q(2); h.q(3); },
+    function(h){ h.g([h.n(0,1/3),h.n(2/3,1/3)],'single',3); h.r(1/3,.34,'eighth'); h.trip(1); h.q(2); h.q(3); },
+    function(h){ h.qtrTrip(0); h.eighths(2); h.q(3); },
+    function(h){ h.eighths(0); h.eighths(1); h.trip(2); h.q(3); },
+    function(h){ h.trip(0); h.s16(1); h.trip(2); h.q(3); },
+    function(h){ h.qtrTrip(0); h.trip(2); h.q(3); }
+  ]},
+{ bpm:69, title:'Offbeat rests',
+  blurb:'Day 5 mixes sixteenths and eighth-note triplets at 69 BPM, with rests landing on offbeats so the silence itself feels syncopated.',
+  detail:'<p>Seven measures. Sixteenth rests lead two of the figures, and measure 4 alternates eighth rests and eighth notes for two full beats.</p>',
+  measures:[
+    function(h){ h.s16(0); h.trip(1); h.r(2,.5,'eighth'); h.n(2.5,.5); h.q(3); },
+    function(h){ h.sixGroup3(0); h.n(1,.5); h.r(1.5,.25,'sixteenth'); h.n(1.75,.25); h.trip(2); h.q(3); },
+    function(h){ h.trip(0); h.s16(1); h.dotFig(2); h.q(3); },
+    function(h){ h.r(0,.5,'eighth'); h.n(.5,.5); h.r(1,.5,'eighth'); h.n(1.5,.5); h.s16(2); h.q(3); },
+    function(h){ h.s16(0); h.s16(1); h.trip(2); h.q(3); },
+    function(h){ h.dotQtr(0); h.trip(2); h.q(3); },
+    function(h){ h.trip(0); h.sixGroup3(1); h.eighths(2); h.q(3); }
+  ]},
+{ bpm:65, title:'Quintuplet focus',
+  blurb:'Day 6 is quintuplet day: five-in-the-time-of-four on different beats, one wide quintuplet stretched across two beats, and sixteenth fills in the gaps.',
+  detail:'<p>Seven measures. Measure 2 stretches five notes evenly across beats 1 and 2; everywhere else the quintuplets sit inside single beats, surrounded by sixteenth runs and dotted figures.</p>',
+  measures:[
+    function(h){ h.quin(0); h.q(1); h.quin(2); h.q(3); },
+    function(h){ h.quinWide(0); h.q(2); h.q(3); },
+    function(h){ h.s16(0); h.quin(1); h.s16(2); h.q(3); },
+    function(h){ h.quin(0); h.quin(1); h.eighths(2); h.q(3); },
+    function(h){ h.q(0); h.quin(1); h.restLed(2); h.q(3); },
+    function(h){ h.s16(0); h.quin(1); h.dotFig(2); h.q(3); },
+    function(h){ h.quin(0); h.trip(1); h.s16(2); h.q(3); }
+  ]},
+{ bpm:67, title:'Sixes and sevens',
+  blurb:'Day 7 saves its worst for last: plain eighths and sixteenths early, then sextuplets and septuplets arrive in the later measures, sometimes back to back.',
+  detail:'<p>Seven measures at the reel\u2019s tempo. Measure 6 is the peak: a sextuplet and a septuplet in consecutive beats, then eighths to recover on.</p>',
+  measures:[
+    function(h){ h.eighths(0); h.q(1); h.q(2); h.q(3); },
+    function(h){ h.s16(0); h.eighths(1); h.q(2); h.q(3); },
+    function(h){ h.dotQtr(0); h.s16(2); h.q(3); },
+    function(h){ h.sext(0); h.q(1); h.eighths(2); h.q(3); },
+    function(h){ h.sept(0); h.s16(1); h.q(2); h.q(3); },
+    function(h){ h.sext(0); h.sept(1); h.eighths(2); h.q(3); },
+    function(h){ h.sept(0); h.sext(1); h.dotFig(2); h.q(3); }
+  ]},
+{ bpm:72, title:'Offbeat challenge',
+  blurb:'Day 8 is the fastest yet at 72 BPM, and it keeps moving the ground: rests on downbeats, dotted rhythms, eighth notes that only start on offbeats, and short sixteenth bursts.',
+  detail:'<p>Seven measures. Measure 1 opens with a full quarter rest; measure 2\u2019s first note lands on the offbeat after an eighth rest. Stay loose and trust the metronome accents.</p>',
+  measures:[
+    function(h){ h.r(0,1,'quarter'); h.eighths(1); h.q(2); h.q(3); },
+    function(h){ h.r(0,.5,'eighth'); h.g([h.n(.5,.5),h.n(1,.5),h.n(1.5,.5)],'single'); h.dotFig(2); h.q(3); },
+    function(h){ h.dotQtr(0); h.s16(2); h.q(3); },
+    function(h){ h.r(0,.5,'eighth'); h.n(.5,.5); h.s16(1); h.dotFig(2); h.q(3); },
+    function(h){ h.s16(0); h.r(1,1,'quarter'); h.eighths(2); h.q(3); },
+    function(h){ h.dotFig(0); h.dotFig(1); h.r(2,.5,'eighth'); h.n(2.5,.5); h.q(3); },
+    function(h){ h.r(0,.5,'eighth'); h.n(.5,.5); h.s16(1); h.s16(2); h.q(3); }
+  ]},
+{ bpm:70, title:'Everything so far',
+  blurb:'Day 9 throws the whole vocabulary into eight measures at 70 BPM: triplets, sixteenths, a quintuplet, a sextuplet, a septuplet, dotted figures and rests, all in one line. Two downbeats carry flams: tap the small grace note, then the beat itself.',
+  detail:'<p>Eight dense measures. If a figure type exists in Days 1 to 8, it shows up here at least once.</p>',
+  measures:[
+    function(h){ h.s16(0); h.trip(1); h.quin(2); h.n(3,1,{flam:true}); },
+    function(h){ h.dotFig(0); h.trip(1); h.sext(2); h.q(3); },
+    function(h){ h.sixGroup3(0); h.dotQtr(1); h.trip(3); },
+    function(h){ h.sept(0); h.s16(1); h.dotFig(2); h.q(3); },
+    function(h){ h.trip(0); h.quin(1); h.s16(2); h.q(3); },
+    function(h){ h.r(0,.5,'eighth'); h.n(.5,.5); h.sext(1); h.dotFig(2); h.n(3,1,{flam:true}); },
+    function(h){ h.s16(0); h.s16(1); h.trip(2); h.q(3); },
+    function(h){ h.dotQtr(0); h.quin(2); h.q(3); }
+  ]},
+{ bpm:67, title:'Level 8 remix',
+  blurb:'Day 10 returns to the reel\u2019s 67 BPM for a Level 8 remix: a brand-new eight-measure arrangement of quintuplets, sextuplets, septuplets and sixteenth runs. Same weapons, different order, and a flam on the last beat of the first and final measures.',
+  detail:'<p>Eight measures, none of them Day 1\u2019s. The sextuplet and septuplet now open the piece instead of arriving in measure 2.</p>',
+  measures:[
+    function(h){ h.sext(0); h.sept(1); h.s16(2); h.n(3,1,{flam:true}); },
+    function(h){ h.quin(0); h.sext(1); h.dotFig(2); h.q(3); },
+    function(h){ h.s16(0); h.sept(1); h.trip(2); h.q(3); },
+    function(h){ h.restLed(0); h.sext(1); h.eighths(2); h.q(3); },
+    function(h){ h.sept(0); h.quin(1); h.s16(2); h.q(3); },
+    function(h){ h.dotQtr(0); h.sext(2); h.q(3); },
+    function(h){ h.s16(0); h.quin(1); h.sixGroup3(2); h.q(3); },
+    function(h){ h.sext(0); h.sept(1); h.dotFig(2); h.n(3,1,{flam:true}); }
+  ]}
+];
+
+/* ---------- deterministic generation for Day 11+ ---------- */
+function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; var t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+var CELLS1=[
+  {w:3,   f:function(h,r){ h.q(r); }},
+  {w:3,   f:function(h,r){ h.eighths(r); }},
+  {w:2.4, f:function(h,r){ h.s16(r); }},
+  {w:2,   f:function(h,r){ h.dotFig(r); }},
+  {w:1.6, f:function(h,r){ h.figDot(r); }},
+  {w:1.6, f:function(h,r){ h.sync(r); }},
+  {w:2.2, f:function(h,r){ h.trip(r); }},
+  {w:1.4, f:function(h,r){ h.quin(r); }},
+  {w:1.2, f:function(h,r){ h.sext(r); }},
+  {w:0.7, f:function(h,r){ h.sept(r); }},
+  {w:1.4, f:function(h,r){ h.eighth2six(r); }},
+  {w:1.4, f:function(h,r){ h.twoSixEighth(r); }},
+  {w:1.2, f:function(h,r){ h.r(r,.5,'eighth'); h.n(r+.5,.5); }},
+  {w:1.2, f:function(h,r){ h.restLed(r); }},
+  {w:1,   f:function(h,r){ h.sixGroup3(r); }},
+  {w:0.7, f:function(h,r){ h.r(r,1,'quarter'); }, rest:true}
+];
+var CELLS2=[
+  {w:2.4, f:function(h,r){ h.dotQtr(r); }},
+  {w:1.6, f:function(h,r){ h.half(r); }},
+  {w:1.6, f:function(h,r){ h.qtrTrip(r); }},
+  {w:1.2, f:function(h,r){ h.quinWide(r); }},
+  {w:2,   f:function(h,r){ h.q(r); h.eighths(r+1); }},
+  {w:2,   f:function(h,r){ h.eighths(r); h.q(r+1); }},
+  {w:1.4, f:function(h,r){ h.q(r); h.q(r+1); }}
+];
+function pickCell(rng,cells,diff,avoidRest,isOneBeat){
+  var total=0,i;
+  var ws=cells.map(function(c,idx){
+    var w=c.w;
+    if(diff>0 && isOneBeat){
+      if(idx>=2 && idx<=9) w*=(1+diff*0.9);
+      if(idx<=1) w*=(1-diff*0.45);
+    }
+    if(avoidRest && c.rest) w=0;
+    total+=w; return w;
+  });
+  var x=rng()*total;
+  for(i=0;i<cells.length;i++){ x-=ws[i]; if(x<=0) return cells[i]; }
+  return cells[cells.length-1];
+}
+function generateDay(n){
+  var rng=mulberry32((n*2654435761)>>>0);
+  var bpm=60+Math.floor(rng()*15); /* 60..74 */
+  var measureCount=6+Math.floor(rng()*3); /* 6..8 */
+  var diff=Math.min(1,Math.max(0,(n-10)/60));
+  var flamMeasure = rng()<0.45 ? Math.floor(rng()*measureCount) : -1; /* at most one flam per generated day */
+  var measureFns=[];
+  for(var m=0;m<measureCount;m++){
+    (function(mIdx){
+      var cells=[]; var rel=0, usedRest=false, first=true;
+      while(rel<4){
+        if(first && mIdx===flamMeasure){ cells.push({rel:0, f:function(h,r){ h.n(r,1,{flam:true}); }}); rel+=1; first=false; continue; }
+        first=false;
+        var rem=4-rel;
+        if(rem>=2 && rng()<0.34){ var c2=pickCell(rng,CELLS2,diff,false,false); cells.push({rel:rel,f:c2.f}); rel+=2; }
+        else { var c1=pickCell(rng,CELLS1,diff,usedRest,true); if(c1.rest) usedRest=true; cells.push({rel:rel,f:c1.f}); rel+=1; }
+      }
+      measureFns.push(function(h){ cells.forEach(function(c){ c.f(h,c.rel); }); });
+    })(m);
+  }
+  return { bpm:bpm, title:'Daily rhythm, generated',
+    blurb:'Day '+n+' is generated in your browser from puzzle number '+n+', so every player sight-reads the exact same rhythm today. '+measureCount+' measures at '+bpm+' BPM, drawn from the same vocabulary as the hand-written days.',
+    detail:'<p>A generated day: '+measureCount+' measures of one-beat and two-beat pattern cells (eighths, sixteenths, dotted figures, triplets, quintuplets, sextuplets, occasional septuplets and rests), combined by a seeded generator keyed to the puzzle number.</p>',
+    measures:measureFns };
+}
+var AUTHORED_RHYTHMS={}; /* day number -> exported rhythm JSON from the creator; authored entries beat built-in and generated days */
+function getDay(n){
+  if(AUTHORED_RHYTHMS[n]) return defFromElements(AUTHORED_RHYTHMS[n]);
+  var ov=findOverride(n); if(ov) return defFromElements(ov);
+  return n<=10 ? DAYS[n-1] : generateDay(n);
+}
+
+/* ---------- dates & puzzle number ---------- */
+var DAY_ONE=Date.UTC(2026,10,2); /* Mon Nov 2, 2026 */
+function laParts(){
+  var parts=new Intl.DateTimeFormat('en-US',{timeZone:'America/Los_Angeles',year:'numeric',month:'numeric',day:'numeric'}).formatToParts(new Date());
+  var o={};
+  parts.forEach(function(p){ if(p.type==='year'||p.type==='month'||p.type==='day') o[p.type]=parseInt(p.value,10); });
+  return o;
+}
+function todayNumber(){
+  var t=laParts();
+  var n=Math.round((Date.UTC(t.year,t.month-1,t.day)-DAY_ONE)/86400000)+1;
+  return Math.max(1,n);
+}
+function dateLabelFor(n){
+  var d=new Date(DAY_ONE+(n-1)*86400000);
+  return d.toLocaleDateString('en-US',{timeZone:'UTC',weekday:'short',month:'short',day:'numeric',year:'numeric'});
+}
+
+/* ---------- stats (localStorage, best effort) ---------- */
+var LS_KEY='sreadle-stats-v1';
+var stats={days:{}};
+try{ var raw=localStorage.getItem(LS_KEY); if(raw){ var parsed=JSON.parse(raw); if(parsed && parsed.days) stats=parsed; } }catch(e){}
+function saveStats(){ try{ localStorage.setItem(LS_KEY,JSON.stringify(stats)); }catch(e){} }
+function renderStats(){
+  var played=0,best=null;
+  Object.keys(stats.days).forEach(function(k){ var d=stats.days[k]; if(d && d.done){ played++; if(best===null||d.best>best) best=d.best; } });
+  var streak=0, start=todayNumber();
+  if(!(stats.days[start] && stats.days[start].done)) start=start-1;
+  for(var d=start; d>=1; d--){ if(stats.days[d] && stats.days[d].done) streak++; else break; }
+  document.getElementById('statPlayed').textContent=played;
+  document.getElementById('statStreak').textContent=streak;
+  document.getElementById('statBest').textContent= best===null?'—':best;
+}
+
+/* ---------- game state ---------- */
+var todayNum=todayNumber();
+var selectedDay=todayNum;
+var dayDef=getDay(selectedDay);
+var chart=buildChart(dayDef.measures);
+var notes=chart.notes, rests=chart.rests, groups=chart.groups;
+var speed=1, metroOn=true, playing=false, finished=false;
+var startPerf=0, rafId=null, lastCountBeat=-99, lastMetroBeat=-1;
+var counts={perfect:0,great:0,good:0,miss:0}, combo=0, bestCombo=0, extraTaps=0, weighted=0;
+var lastShareText='';
+var audioCtx=null;
+function unlockAudioSession(){ if('audioSession' in navigator){ try{ navigator.audioSession.type='playback'; }catch(e){} } }
+var silentEl=null;
+function startSilentLoop(){
+  try{
+    if(!silentEl){
+      silentEl=document.createElement('audio');
+      silentEl.setAttribute('playsinline',''); silentEl.setAttribute('webkit-playsinline','');
+      silentEl.loop=true; silentEl.volume=0; silentEl.muted=true;
+      silentEl.src='data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
+    }
+    var p=silentEl.play(); if(p&&p.catch) p.catch(function(){});
+  }catch(e){}
+}
+function stopSilentLoop(){ try{ if(silentEl) silentEl.pause(); }catch(e){} }
+function ensureAudio(){ unlockAudioSession(); if(!audioCtx){ try{ audioCtx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } if(audioCtx && audioCtx.state==='suspended') audioCtx.resume(); return audioCtx; }
+function click(freq,dur,vol,type){
+  var ac=ensureAudio(); if(!ac) return;
+  var t=ac.currentTime;
+  var o=ac.createOscillator(), g=ac.createGain();
+  o.type=type||'square'; o.frequency.setValueAtTime(freq,t);
+  g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  o.connect(g); g.connect(ac.destination); o.start(t); o.stop(t+dur+0.02);
+  try{
+    var len=Math.floor(ac.sampleRate*0.03), buf=ac.createBuffer(1,len,ac.sampleRate), d=buf.getChannelData(0);
+    for(var i=0;i<len;i++) d[i]=(Math.random()*2-1)*(1-i/len);
+    var src=ac.createBufferSource(); src.buffer=buf; var g2=ac.createGain(); g2.gain.value=vol*0.7;
+    src.connect(g2); g2.connect(ac.destination); src.start(t);
+  }catch(e){}
+}
+function tapSound(){ click(1900,0.07,0.22,'square'); }
+function metroSound(accent){ click(accent?1560:1050,0.09,accent?0.28:0.2,'sine'); }
+function msPerBeat(){ return 60000/(dayDef.bpm*speed); }
+/* ---------- flam onsets: a flammed note is two judged onsets ---------- */
+var onsets=[], totalOnsets=1;
+function graceBeats(){ return 0.11/(msPerBeat()/1000); } /* fixed 110 ms before the main note, not scaled by tempo */
+function onsetBeat(o){ return o.grace ? o.note.beat - graceBeats() : o.note.beat; }
+function buildOnsets(){
+  onsets=[];
+  notes.forEach(function(n){
+    n.graceState='pending'; n.state='pending'; n.judge=null;
+    if(n.flam){ var g={note:n, grace:true, state:'pending', judge:null}; n.graceOnset=g; onsets.push(g); }
+    var mn={note:n, grace:false, state:'pending', judge:null}; n.mainOnset=mn; onsets.push(mn);
+  });
+  totalOnsets=Math.max(1,onsets.length);
+}
+function songBeatNow(){ if(!playing && !finished) return -COUNTIN; return (performance.now()-startPerf)/msPerBeat() - COUNTIN; }
+
+/* ---------- day selection & archive ---------- */
+function loadDay(n){
+  selectedDay=n; dayDef=getDay(n); chart=buildChart(dayDef.measures);
+  notes=chart.notes; rests=chart.rests; groups=chart.groups; buildOnsets();
+  counts={perfect:0,great:0,good:0,miss:0}; combo=0; bestCombo=0; extraTaps=0; weighted=0;
+  finished=false;
+  document.getElementById('results').classList.remove('on');
+  document.getElementById('metaDay').innerHTML='Sreadle <b>#'+n+'</b>';
+  document.getElementById('metaDate').innerHTML='<b>'+dateLabelFor(n)+'</b>';
+  document.getElementById('metaBpm').textContent=dayDef.bpm;
+  document.getElementById('metaMeasures').textContent=chart.measures;
+  document.getElementById('metaNotes').textContent=notes.length;
+  document.getElementById('dayBlurb').textContent=dayDef.blurb;
+  document.getElementById('dayDetail').innerHTML=dayDef.detail;
+  document.getElementById('startBtn').textContent='▶ Start Day '+n+' · Count-in';
+  document.getElementById('measureLabel').textContent='Measure – / '+chart.measures;
+  document.getElementById('progBar').style.width='0%';
+  document.getElementById('feedback').textContent = n===todayNum ? 'Press Start, hear the count-in, then tap on the line.' : 'Day '+n+' loaded from the archive. Press Start when you are ready.';
+  renderArchive(); updateHUD(); updateAttemptsUI(); draw(-0.55);
+}
+function renderArchive(){
+  var wrap=document.getElementById('archiveList'); wrap.innerHTML='';
+  var maxDay=Math.max(10,todayNum);
+  for(var n=1;n<=maxDay;n++){
+    (function(n){
+      var def=getDay(n);
+      var b=document.createElement('button'); b.type='button'; b.className='day-btn';
+      b.setAttribute('aria-pressed', n===selectedDay?'true':'false');
+      var done=stats.days[n] && stats.days[n].done;
+      var html='<span class="dn">Day '+n+(done?' <span class="check">✓</span>':'')+'</span>';
+      html+='<span class="dm">♩ = '+def.bpm+' · '+def.measures.length+' meas.</span>';
+      if(done) html+='<span class="best">Best '+stats.days[n].best+'/1000</span>';
+      var usedA=stats.days[n]&&stats.days[n].attempts?stats.days[n].attempts:0;
+      if(usedA>=2) html+='<span class="best">🔒 Locked</span>';
+      else if(usedA===1) html+='<span class="best">1 attempt left</span>';
+      if(n===todayNum) html+='<span class="today-tag">Today</span>';
+      b.innerHTML=html;
+      b.addEventListener('click',function(){ if(playing) return; loadDay(n); window.scrollTo({top:0,behavior:'smooth'}); });
+      wrap.appendChild(b);
+    })(n);
+  }
+}
+
+/* ---------- rendering ---------- */
+function resizeCanvas(){
+  var r=canvas.getBoundingClientRect(), dpr=window.devicePixelRatio||1;
+  canvas.width=Math.round(r.width*dpr); canvas.height=Math.round((window.innerWidth<=520?172:190)*dpr);
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+window.addEventListener('resize',function(){ resizeCanvas(); if(!playing && !finished) draw(-0.55); });
+function drawRest(x,y,kind){
+  ctx.save(); ctx.fillStyle='#111'; ctx.strokeStyle='#111'; ctx.lineWidth=2; ctx.lineCap='round';
+  if(kind==='eighth'){
+    ctx.beginPath(); ctx.ellipse(x-2,y-14,4.5,3.2,-0.6,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(x+1,y-13); ctx.quadraticCurveTo(x-4,y+2,x-6,y+14); ctx.stroke();
+  } else if(kind==='sixteenth'){
+    ctx.beginPath(); ctx.ellipse(x-2,y-18,4.2,3,-0.6,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(x-3,y-6,4.2,3,-0.6,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(x+2,y-18); ctx.quadraticCurveTo(x-3,y-2,x-6,y+15); ctx.stroke();
+  } else if(kind==='half'){
+    ctx.fillRect(x-9,y-7,18,6);
+    ctx.font='600 9px Archivo,sans-serif'; ctx.fillStyle='#555'; ctx.fillText('half rest',x-16,y+20);
+  } else {
+    ctx.beginPath(); ctx.moveTo(x+3,y-16); ctx.quadraticCurveTo(x-7,y-10,x+2,y-4); ctx.quadraticCurveTo(x-7,y+2,x+1,y+8); ctx.quadraticCurveTo(x-4,y+13,x+3,y+16); ctx.lineWidth=3; ctx.stroke();
+  }
+  ctx.restore();
+}
+function drawFlag(x,topY,count){
+  ctx.save(); ctx.strokeStyle=ctx.fillStyle; ctx.lineWidth=2;
+  for(var i=0;i<count;i++){
+    var yy=topY+i*9;
+    ctx.beginPath(); ctx.moveTo(x,yy); ctx.quadraticCurveTo(x+13,yy+3,x+11,yy+15); ctx.quadraticCurveTo(x+9,yy+7,x,yy+5); ctx.closePath(); ctx.fill();
+  }
+  ctx.restore();
+}
+function draw(currentBeat){
+  var W=canvas.getBoundingClientRect().width, H=(window.innerWidth<=520?172:190);
+  ctx.clearRect(0,0,W,H);
+  var staffY=H*0.62, playX=W*0.22;
+  ctx.strokeStyle='#111'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(0,staffY); ctx.lineTo(W,staffY); ctx.stroke();
+  ctx.textAlign='left';
+  for(var m=0;m<=chart.measures;m++){
+    var bx=playX + (m*4 - currentBeat)*PX_PER_BEAT;
+    if(bx<-20||bx>W+20) continue;
+    ctx.strokeStyle='#111'; ctx.lineWidth=(m===chart.measures?3:1.6); ctx.beginPath(); ctx.moveTo(bx,staffY-28); ctx.lineTo(bx,staffY+10); ctx.stroke();
+    if(m<chart.measures){ ctx.fillStyle='#777'; ctx.font='700 10px "IBM Plex Mono",monospace'; ctx.fillText(String(m+1),bx+5,staffY-36); }
+  }
+  rests.forEach(function(r){
+    var x=playX + (r.beat - currentBeat)*PX_PER_BEAT;
+    if(x<-30||x>W+30) return;
+    var cx=r.dur>=1 ? x + (r.dur*PX_PER_BEAT)/2 - PX_PER_BEAT*0.1 : x+6;
+    drawRest(cx,staffY,r.kind);
+  });
+  var stemTop=staffY-44;
+  groups.forEach(function(g){
+    var xs=g.notes.map(function(n){ return playX + (n.beat - currentBeat)*PX_PER_BEAT; });
+    if(xs[xs.length-1]<-30||xs[0]>W+30) return;
+    ctx.fillStyle='#111';
+    var top=stemTop;
+    ctx.fillRect(xs[0]+9, top, xs[xs.length-1]-xs[0], 5);
+    if(g.beam==='double'){ ctx.fillRect(xs[0]+9, top+9, xs[xs.length-1]-xs[0], 5); }
+    (g.stubs||[]).forEach(function(s){
+      if(s.t==='span'){ ctx.fillRect(xs[s.a]+9, top+9, xs[s.b]-xs[s.a], 5); }
+      else if(s.d==='right'){ ctx.fillRect(xs[s.i]+9, top+9, 22, 5); }
+      else { ctx.fillRect(xs[s.i]+9-22, top+9, 22, 5); }
+    });
+    if(g.tuplet){ ctx.fillStyle='#111'; ctx.font='italic 900 17px Georgia,serif'; ctx.textAlign='center'; ctx.fillText(String(g.tuplet), (xs[0]+xs[xs.length-1])/2+5, top-10); ctx.textAlign='left'; }
+  });
+  notes.forEach(function(n){
+    var x=playX + (n.beat - currentBeat)*PX_PER_BEAT;
+    if(x<-30||x>W+30) return;
+    var col = n.state==='hit' ? '#159947' : (n.state==='miss' ? '#d92d20' : '#111');
+    ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(x+9, staffY-3); ctx.lineTo(x+9, stemTop + (n.grouped?5:0)); ctx.stroke();
+    ctx.save(); ctx.translate(x,staffY); ctx.rotate(-0.32); ctx.beginPath(); ctx.ellipse(0,0,9.5,6.8,0,0,Math.PI*2);
+    if(n.dur>=2){ ctx.fillStyle='#fff'; ctx.fill(); ctx.strokeStyle=col; ctx.lineWidth=2.2; ctx.stroke(); }
+    else ctx.fill();
+    ctx.restore();
+    if(n.dot){ ctx.fillStyle=col; ctx.beginPath(); ctx.ellipse(x+18,staffY-7,2.6,2.6,0,0,Math.PI*2); ctx.fill(); }
+    if(n.flam){
+      var gx=x-27, gcol = n.graceState==='hit' ? '#159947' : (n.graceState==='miss' ? '#d92d20' : '#111');
+      ctx.strokeStyle=gcol; ctx.fillStyle=gcol; ctx.lineWidth=1.8;
+      ctx.beginPath(); ctx.moveTo(gx+6, staffY-2); ctx.lineTo(gx+6, staffY-27); ctx.stroke();
+      ctx.save(); ctx.translate(gx,staffY); ctx.rotate(-0.32); ctx.beginPath(); ctx.ellipse(0,0,6.4,4.6,0,0,Math.PI*2); ctx.fill(); ctx.restore();
+      ctx.beginPath(); ctx.moveTo(gx+0.5, staffY-11); ctx.lineTo(gx+11.5, staffY-25); ctx.stroke();
+    }
+    if(!n.grouped){
+      if(n.dur===0.5) drawFlag(x+9,stemTop,1);
+      else if(n.dur===0.25) drawFlag(x+9,stemTop,2);
+    }
+  });
+  ctx.fillStyle='#f5b301'; ctx.fillRect(playX-2,8,4,H-16);
+  ctx.beginPath(); ctx.moveTo(playX-8,8); ctx.lineTo(playX+8,8); ctx.lineTo(playX,20); ctx.closePath(); ctx.fill();
+  var x0=playX + (-0.62 - currentBeat)*PX_PER_BEAT;
+  if(x0>-40 && x0<W){ ctx.fillStyle='#111'; ctx.font='900 17px Georgia,serif'; ctx.fillText('4',x0,staffY-13); ctx.fillText('4',x0,staffY+9); }
+}
+
+/* ---------- gameplay ---------- */
+function updateHUD(){
+  var sc=Math.max(0, Math.round(weighted/totalOnsets*1000 - extraTaps*2));
+  document.getElementById('scoreVal').textContent=sc;
+  var judged=counts.perfect+counts.great+counts.good+counts.miss;
+  var acc = judged===0?100: Math.max(0, ((counts.perfect*100+counts.great*75+counts.good*50)/(judged*100))*100 - extraTaps*0.4);
+  document.getElementById('accVal').textContent=judged===0?'—':acc.toFixed(1).replace(/\.0$/,'');
+  document.getElementById('comboVal').textContent=combo;
+  document.getElementById('extraVal').textContent=extraTaps;
+  return acc;
+}
+function showJudge(text,color){
+  var el=document.getElementById('judgePop'); el.textContent=text; el.style.color=color;
+  el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
+  var fb=document.getElementById('feedback');
+  fb.innerHTML=text==='EXTRA' ? '<span class="extra">Extra tap, no note on the line.</span>' : '<span class="perfect">'+text+'</span>'+(combo>2?' · '+combo+' combo':'');
+}
+function handleTap(){
+  ensureAudio(); tapSound();
+  var pad=document.getElementById('tapPad'); pad.classList.add('hit'); setTimeout(function(){pad.classList.remove('hit');},90);
+  if(!playing||finished) return;
+  var b=songBeatNow();
+  var best=null,bestDiff=1e9;
+  for(var i=0;i<onsets.length;i++){ var o=onsets[i]; if(o.state!=='pending') continue; var d=b-onsetBeat(o); if(Math.abs(d)<Math.abs(bestDiff)){bestDiff=d;best=o;} }
+  var errMs=bestDiff*msPerBeat();
+  if(!best || Math.abs(errMs)>140){
+    if(b<0) return; /* stray taps during count-in are ignored, but a flam grace note just before beat 1 still counts */
+    extraTaps++; showJudge('EXTRA','#d92d20'); updateHUD(); return;
+  }
+  var ae=Math.abs(errMs);
+  best.state='hit'; runJudged=true;
+  if(best.grace) best.note.graceState='hit'; else { best.note.state='hit'; best.note.judge=null; }
+  if(ae<=45){ best.judge='Perfect'; counts.perfect++; weighted+=1; showJudge('PERFECT','#159947'); }
+  else if(ae<=90){ best.judge='Great'; counts.great++; weighted+=0.75; showJudge('GREAT','#65a30d'); }
+  else { best.judge='Good'; counts.good++; weighted+=0.45; showJudge('GOOD','#d97706'); }
+  combo++; if(combo>bestCombo) bestCombo=combo;
+  updateHUD();
+}
+function measureSquares(){
+  var squares='';
+  for(var m=1;m<=chart.measures;m++){
+    var mo=onsets.filter(function(o){return o.note.measure===m;});
+    if(!mo.length){ squares+='\u{1F7E9}'; continue; }
+    var got=0;
+    mo.forEach(function(o){ if(o.judge==='Perfect')got+=100; else if(o.judge==='Great')got+=75; else if(o.judge==='Good')got+=50; });
+    var acc=got/mo.length;
+    squares+= acc>=90 ? '\u{1F7E9}' : (acc>=70 ? '\u{1F7E8}' : '\u{1F7E5}');
+  }
+  return squares;
+}
+function finish(){
+  playing=false; finished=true; document.body.classList.remove('playing');
+  stopSilentLoop();
+  document.getElementById('quitBtn').hidden=true;
+  document.getElementById('countIn').classList.remove('on');
+  document.getElementById('startBtn').disabled=false; document.getElementById('startBtn').textContent='▶ Start Day '+selectedDay+' · Count-in';
+  document.getElementById('measureLabel').textContent='Measure '+chart.measures+' / '+chart.measures+' · Done';
+  document.getElementById('progBar').style.width='100%';
+  var finalAcc=Math.max(0, ((counts.perfect*100+counts.great*75+counts.good*50)/(totalOnsets*100))*100 - extraTaps*0.4);
+  var finalScore=Math.max(0, Math.round(weighted/totalOnsets*1000 - extraTaps*2));
+  var squares=measureSquares();
+  document.getElementById('finalDayLine').textContent='Sreadle #'+selectedDay+' · Final accuracy';
+  document.getElementById('finalAcc').textContent=finalAcc.toFixed(1).replace(/\.0$/,'');
+  document.getElementById('finalScore').textContent=finalScore;
+  document.getElementById('finalCombo').textContent=bestCombo;
+  document.getElementById('finalExtra').textContent=extraTaps;
+  document.getElementById('finalSquares').textContent=squares;
+  document.getElementById('cPerfect').textContent=counts.perfect;
+  document.getElementById('cGreat').textContent=counts.great;
+  document.getElementById('cGood').textContent=counts.good;
+  document.getElementById('cMiss').textContent=counts.miss;
+  var grade = finalAcc>=95?'Grade S · Sightreader':finalAcc>=85?'Grade A · Very steady':finalAcc>=70?'Grade B · Getting there':finalAcc>=55?'Grade C · Keep counting':'Grade D · Slow it to 0.75× and retry';
+  document.getElementById('finalGrade').textContent=grade;
+  var attemptNo=0;
+  if(selectedDay>=1){
+    var rec=stats.days[selectedDay]||{done:false,best:0,attempts:0,results:[]};
+    rec.attempts=(rec.attempts||0)+1; attemptNo=rec.attempts;
+    if(!rec.results) rec.results=[];
+    var thisResult={acc:finalAcc, score:finalScore, combo:bestCombo, squares:squares, attempt:attemptNo};
+    rec.results.push(thisResult);
+    rec.done=true;
+    if(!rec.bestResult || finalScore>rec.bestResult.score){ rec.bestResult=thisResult; rec.best=finalScore; }
+    stats.days[selectedDay]=rec;
+    saveStats(); renderStats(); renderArchive();
+    lastShareText=buildShareText(selectedDay,thisResult);
+    document.getElementById('attemptNote').textContent = attemptNo>=2 ? 'Attempt 2 of 2. That was your last attempt for this puzzle.' : 'Attempt '+attemptNo+' of 2 · '+(2-attemptNo)+' attempt left';
+  } else {
+    lastShareText='';
+    document.getElementById('attemptNote').textContent='Custom rhythm · unlimited plays, and nothing is recorded against a daily puzzle.';
+  }
+  document.getElementById('shareBtn').style.display = selectedDay>=1 ? '' : 'none';
+  var ag=document.getElementById('againBtn');
+  if(selectedDay>=1 && attemptsLeft(selectedDay)<=0){ ag.disabled=true; ag.textContent='No attempts left for this puzzle'; }
+  else { ag.disabled=false; ag.textContent='Play again'; }
+  updateAttemptsUI();
+  var res=document.getElementById('results'); res.classList.add('on');
+  document.getElementById('feedback').textContent='Round complete. Copy your result, then tomorrow brings a brand-new rhythm.';
+  res.scrollIntoView({behavior:'smooth',block:'nearest'});
+  draw(chart.totalBeats+1);
+}
+function loop(){
+  if(!playing) return;
+  var b=songBeatNow();
+  /* metronome: clicks on every beat from count-in through the final barline, accent on each downbeat */
+  var elapsed=(performance.now()-startPerf)/msPerBeat();
+  var k=Math.floor(elapsed);
+  if(k!==lastMetroBeat && k<COUNTIN+chart.totalBeats){
+    lastMetroBeat=k;
+    if(metroOn){ var sb=k-COUNTIN; metroSound(sb>=0 && sb%4===0); }
+  }
+  if(b<0){
+    var beatIdx=Math.floor(b+COUNTIN);
+    lastCountBeat=beatIdx;
+    var el=document.getElementById('countIn'); el.classList.add('on'); el.textContent=String(4-beatIdx);
+  } else {
+    document.getElementById('countIn').classList.remove('on');
+  }
+  var winBeats=140/msPerBeat();
+  for(var i=0;i<onsets.length;i++){ var o=onsets[i]; if(o.state==='pending' && b-onsetBeat(o)>winBeats){ o.state='miss'; o.judge='Miss'; runJudged=true; if(o.grace) o.note.graceState='miss'; else o.note.state='miss'; counts.miss++; combo=0; showJudge('MISS','#d92d20'); updateHUD(); } }
+  draw(Math.max(b,-COUNTIN));
+  var prog=Math.max(0,Math.min(1,b/chart.totalBeats));
+  document.getElementById('progBar').style.width=(prog*100)+'%';
+  document.getElementById('measureLabel').textContent= b<0 ? 'Count-in · get ready' : 'Measure '+Math.min(chart.measures,Math.floor(b/4)+1)+' / '+chart.measures;
+  if(b>chart.totalBeats+0.6){ finish(); return; }
+  rafId=requestAnimationFrame(loop);
+}
+function startGame(){
+  if(selectedDay>=1 && isLocked(selectedDay)){ updateAttemptsUI(); document.getElementById('feedback').textContent='This puzzle is locked: both attempts are used. Your best result stands.'; return; }
+  ensureAudio(); startSilentLoop();
+  chart=buildChart(dayDef.measures);
+  notes=chart.notes; rests=chart.rests; groups=chart.groups; buildOnsets();
+  counts={perfect:0,great:0,good:0,miss:0}; combo=0; bestCombo=0; extraTaps=0; weighted=0; lastCountBeat=-99; lastMetroBeat=-1;
+  document.getElementById('results').classList.remove('on');
+  updateHUD();
+  document.getElementById('feedback').textContent='Count-in: 4 clicks, then tap on the yellow line. The metronome stays with you all the way.';
+  playing=true; finished=false; runJudged=false; startPerf=performance.now();
+  document.body.classList.add('playing');
+  document.getElementById('quitBtn').hidden=false;
+  document.getElementById('startBtn').disabled=true; document.getElementById('startBtn').textContent='Playing…';
+  if(rafId) cancelAnimationFrame(rafId);
+  loop();
+}
+
+/* ---------- wiring ---------- */
+var segBtns=document.querySelectorAll('.seg button');
+segBtns.forEach(function(btn){ btn.addEventListener('click',function(){
+  if(playing) return;
+  segBtns.forEach(function(x){x.setAttribute('aria-pressed','false');});
+  btn.setAttribute('aria-pressed','true'); speed=parseFloat(btn.getAttribute('data-speed'));
+  document.getElementById('speedInd').textContent='×'+(speed===1?'1':speed);
+});});
+var metroBtn=document.getElementById('metroBtn');
+metroBtn.addEventListener('click',function(){
+  metroOn=!metroOn;
+  metroBtn.setAttribute('aria-pressed', metroOn?'true':'false');
+  var s=document.getElementById('metroState'); s.textContent=metroOn?'ON':'OFF'; s.className=metroOn?'on':'';
+});
+document.getElementById('startBtn').addEventListener('click',startGame);
+document.getElementById('againBtn').addEventListener('click',function(){ window.scrollTo({top:0,behavior:'smooth'}); startGame(); });
+document.getElementById('todayBtn').addEventListener('click',function(){
+  if(playing) return;
+  if(selectedDay!==todayNum) loadDay(todayNum);
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(isLocked(todayNum)){ document.getElementById('feedback').textContent='Today\u2019s puzzle is locked: both attempts are used.'; return; }
+  startGame();
+});
+document.getElementById('shareBtn').addEventListener('click',function(){ if(lastShareText) shareResult(lastShareText,this); });
+document.getElementById('shareBestBtn').addEventListener('click',function(){
+  var rec=stats.days[selectedDay];
+  if(rec && rec.bestResult) shareResult(buildShareText(selectedDay,rec.bestResult),this);
+});
+document.getElementById('quitBtn').addEventListener('click',function(){ if(playing) quitRun(); });
+var pad=document.getElementById('tapPad');
+pad.addEventListener('pointerdown',function(e){ e.preventDefault(); handleTap(); });
+pad.addEventListener('touchstart',function(e){ e.preventDefault(); },{passive:false});
+document.addEventListener('keydown',function(e){
+  if(e.repeat) return;
+  if(e.metaKey||e.ctrlKey||e.altKey) return;
+  var t=e.target;
+  if(t && (t.tagName==='TEXTAREA' || t.tagName==='INPUT')) return;
+  e.preventDefault(); handleTap();
+});
+document.addEventListener('touchmove',function(e){ if(playing) e.preventDefault(); },{passive:false});
+
+/* ---------- rhythm element format: compile / decompile ---------- */
+function compileMeasure(elements){
+  var items=[]; var rel=0;
+  elements.forEach(function(el,idx){
+    if(el.t==='t'){ var size=el.n; for(var i=0;i<size;i++) items.push({el:idx, cell:i, rel:rel+i/size, dur:1/size, kind:(el.cells&&el.cells[i])?'note':'rest', tuplet:size}); rel+=1; }
+    else { var eff=el.d*(el.dot?1.5:1); items.push({el:idx, cell:null, rel:rel, dur:eff, base:el.d, dot:!!el.dot, flam:!!el.flam, kind: el.t==='r'?'rest':'note', tuplet:0}); rel+=eff; }
+  });
+  var fn=function(h){
+    var run=[];
+    function flush(){
+      if(!run.length) return;
+      if(run.length===1){ var it=run[0]; h.n(it.rel,it.dur,(it.dot||it.flam)?{dot:it.dot,flam:it.flam}:{}); }
+      else{
+        var list=run.map(function(it){ return h.n(it.rel,it.dur, it.dot?{dot:true}:{}); });
+        var allShort=run.every(function(it){ return it.dur<=0.3; });
+        var stubs=[];
+        run.forEach(function(it,i){
+          if(it.dur<0.5){
+            var prev=run[i-1], next=run[i+1];
+            if(next && next.dur<0.5) stubs.push({t:'span',a:i,b:i+1});
+            else if(prev && prev.dur<0.5){ /* covered by the span from prev */ }
+            else if(next) stubs.push({t:'stub',i:i,d:'right'});
+            else if(prev) stubs.push({t:'stub',i:i,d:'left'});
+          }
+        });
+        h.g(list, allShort?'double':'single', null, stubs);
+      }
+      run=[];
+    }
+    var i=0;
+    while(i<items.length){
+      var it=items[i];
+      if(it.tuplet){
+        flush();
+        var size=it.tuplet, tnotes=[];
+        for(var j=0;j<size;j++){ var c=items[i+j]; if(c.kind==='note') tnotes.push(h.n(c.rel,c.dur)); else h.r(c.rel,c.dur, size===3?'eighth':'sixteenth'); }
+        if(tnotes.length>=2) h.g(tnotes, size===3?'single':'double', size);
+        i+=size; continue;
+      }
+      if(it.kind==='rest'){ flush(); h.r(it.rel,it.dur, it.dur>=2?'half':it.dur>=1?'quarter':it.dur>=0.5?'eighth':'sixteenth'); i++; continue; }
+      if(it.flam){ flush(); h.n(it.rel,it.dur,{dot:it.dot,flam:true}); i++; continue; }
+      if(it.dur<=0.75){
+        var sameBeat = run.length===0 || (Math.floor(it.rel)===Math.floor(run[0].rel) && it.rel+it.dur<=Math.floor(it.rel)+1.001);
+        if(sameBeat) run.push(it);
+        else { flush(); run.push(it); }
+      } else { flush(); h.n(it.rel,it.dur, it.dot?{dot:true}:{}); }
+      i++;
+    }
+    flush();
+  };
+  return {fn:fn, items:items};
+}
+function defFromElements(entry){
+  var meas=(entry.measures||[]).map(function(els){ return compileMeasure(els).fn; });
+  var flamCount=0;
+  (entry.measures||[]).forEach(function(els){ els.forEach(function(el){ if(el.flam) flamCount++; }); });
+  return { bpm: Math.min(200,Math.max(30, entry.bpm||67)), title: entry.name||'Custom rhythm',
+    blurb:'\u201C'+(entry.name||'Custom rhythm')+'\u201D, a rhythm made in the Sreadle creator'+(flamCount?', with '+flamCount+' flam'+(flamCount>1?'s':''):'')+'. Custom rhythms are not attempt-limited and never touch your daily stats.',
+    detail:'<p>An authored rhythm from the creator: '+(entry.measures||[]).length+' measures at '+(entry.bpm||67)+' BPM'+(flamCount?', including '+flamCount+' flam'+(flamCount>1?'s':'')+' (tap the small grace note, then the beat)':'')+'.</p>',
+    measures: meas };
+}
+function chartToElements(def){
+  var ch=buildChart(def.measures);
+  function noteEl(n){ var el={t:'n', d: n.dot? Math.round((n.dur/1.5)*1000)/1000 : n.dur}; if(n.dot) el.dot=true; if(n.flam) el.flam=true; return el; }
+  var out=[];
+  for(var m=1;m<=ch.measures;m++){
+    var base=(m-1)*4, events=[], consumed={}, tupNote={};
+    ch.groups.forEach(function(g){
+      if(g.measure!==m || !g.tuplet) return;
+      var rel0=g.notes[0].beat-base;
+      var last=g.notes[g.notes.length-1];
+      var span=(last.beat-base)+last.dur-rel0;
+      g.notes.forEach(function(n){ tupNote[n.beat]=true; });
+      if(Math.abs(span-1)<0.03){
+        var cells=[];
+        for(var i=0;i<g.tuplet;i++){ var pos=rel0+i/g.tuplet, has=false; g.notes.forEach(function(n){ if(Math.abs((n.beat-base)-pos)<0.03) has=true; }); cells.push(has?1:0); }
+        events.push({rel:rel0, el:{t:'t', n:g.tuplet, cells:cells}});
+      } else {
+        g.notes.forEach(function(n){ events.push({rel:n.beat-base, el:noteEl(n)}); });
+      }
+      ch.rests.forEach(function(r,ri){ var rr=r.beat-base; if(r.measure===m && rr>=rel0-0.01 && rr<rel0+span-0.01) consumed[ri]=true; });
+    });
+    ch.notes.forEach(function(n){ if(n.measure===m && !tupNote[n.beat]) events.push({rel:n.beat-base, el:noteEl(n)}); });
+    ch.rests.forEach(function(r,ri){ if(r.measure===m && !consumed[ri]) events.push({rel:r.beat-base, el:{t:'r', d:r.dur}}); });
+    events.sort(function(a,b){ return a.rel-b.rel; });
+    out.push(events.map(function(e){ return e.el; }));
+  }
+  return out;
+}
+
+/* ---------- My rhythms library (localStorage) ---------- */
+var LIB_KEY='sreadle-my-rhythms-v1';
+var libRhythms=[];
+try{ var lr=localStorage.getItem(LIB_KEY); if(lr){ var pl=JSON.parse(lr); if(Array.isArray(pl)) libRhythms=pl; } }catch(e){}
+function saveLib(){ try{ localStorage.setItem(LIB_KEY,JSON.stringify(libRhythms)); }catch(e){} }
+function findOverride(n){ if(typeof libRhythms==='undefined' || !libRhythms) return null; for(var i=0;i<libRhythms.length;i++){ if(libRhythms[i].day===n) return libRhythms[i]; } return null; }
+function sanitizeRhythm(o){
+  if(!o || !Array.isArray(o.measures) || o.measures.length<1 || o.measures.length>8) return null;
+  var meas=[];
+  for(var mi=0; mi<o.measures.length; mi++){
+    var src=o.measures[mi]; if(!Array.isArray(src)) return null;
+    var els=[], total=0;
+    for(var ei=0; ei<src.length; ei++){
+      var e=src[ei]; if(!e) return null;
+      if(e.t==='t'){
+        if([3,5,6,7].indexOf(e.n)<0 || !Array.isArray(e.cells) || e.cells.length!==e.n) return null;
+        els.push({t:'t', n:e.n, cells:e.cells.map(function(c){ return c?1:0; })}); total+=1;
+      } else if(e.t==='n' || e.t==='r'){
+        var d=parseFloat(e.d); if(!(d>0) || d>2) return null;
+        var el={t:e.t, d:Math.round(d*1000)/1000}; if(e.dot) el.dot=true; if(e.t==='n' && e.flam) el.flam=true;
+        els.push(el); total+=el.d*(el.dot?1.5:1);
+      } else return null;
+    }
+    if(Math.abs(total-4)>0.011) return null;
+    meas.push(els);
+  }
+  var bpm=parseInt(o.bpm,10); if(!(bpm>=30&&bpm<=200)) bpm=67;
+  var out={name: String(o.name||'Imported rhythm').slice(0,60), bpm:bpm, measures:meas};
+  var dv=parseInt(o.day,10); if(dv>=1&&dv<=9999) out.day=dv;
+  return out;
+}
+
+/* ---------- admin editor state ---------- */
+var draft={name:'My rhythm', bpm:67, measures:[[]]};
+var curMeasure=0, sel=null, edMode='note', edDot=false, edFlam=false, edHistory=[], edHit=[];
+var EPS=0.011;
+function curEls(){ return draft.measures[curMeasure]; }
+function elBeats(el){ return el.t==='t'?1: el.d*(el.dot?1.5:1); }
+function measBeats(list){ var s=0; list.forEach(function(el){ s+=elBeats(el); }); return s; }
+function fmtB(x){ return String(Math.round(x*100)/100); }
+function edSetMsg(t,ok){ var m=document.getElementById('edMsg'); m.textContent=t||''; m.className='ed-msg'+(ok?' ed-ok':''); }
+function pushHistory(){ edHistory.push(JSON.stringify(draft)); if(edHistory.length>60) edHistory.shift(); }
+function describeEl(el,cell){
+  if(el.t==='t') return 'tuplet of '+el.n+(cell!=null&&cell!==undefined ? ' · note '+(cell+1)+' of the group ('+(el.cells[cell]?'note':'rest')+')' : ' · tap one of its notes to flip just that note');
+  var names={'2':'half','1':'quarter','0.5':'eighth','0.25':'sixteenth'};
+  var nm=(el.dot?'dotted ':'')+(names[String(el.d)]||fmtB(el.d)+'-beat');
+  return nm+' '+(el.t==='r'?'rest':'note')+(el.flam?' · with flam':'');
+}
+function syncToggles(){
+  document.getElementById('modeNote').setAttribute('aria-pressed', edMode==='note'?'true':'false');
+  document.getElementById('modeRest').setAttribute('aria-pressed', edMode==='rest'?'true':'false');
+  document.getElementById('dotTgl').setAttribute('aria-pressed', edDot?'true':'false');
+  document.getElementById('flamTgl').setAttribute('aria-pressed', edFlam?'true':'false');
+  document.querySelectorAll('#durChips .chip').forEach(function(chip){
+    var base=parseFloat(chip.getAttribute('data-dur'));
+    chip.querySelector('[data-eff]').textContent=fmtB(base*(edDot?1.5:1))+(base*(edDot?1.5:1)===1?' beat':' beats');
+  });
+}
+function renderEditor(){
+  document.getElementById('edMeasLabel').textContent='Measure '+(curMeasure+1)+' of '+draft.measures.length;
+  document.getElementById('prevMeas').disabled=curMeasure<=0;
+  document.getElementById('nextMeas').disabled=curMeasure>=draft.measures.length-1;
+  document.getElementById('addMeas').disabled=draft.measures.length>=8;
+  document.getElementById('delMeas').disabled=draft.measures.length<=1;
+  var used=measBeats(curEls());
+  var bc=document.getElementById('beatCounter');
+  bc.textContent=fmtB(used)+' / 4 beats';
+  bc.classList.toggle('full', Math.abs(used-4)<EPS);
+  var si=document.getElementById('selInfo');
+  si.textContent = (sel && curEls()[sel.el]) ? 'Selected: '+describeEl(curEls()[sel.el], sel.cell) : 'Nothing selected. Add notes below, or tap the preview.';
+  syncToggles();
+  drawEdPreview();
+}
+function drawEdPreview(){
+  var cvs=document.getElementById('edCanvas'); var r=cvs.getBoundingClientRect(); if(r.width<10) return;
+  var dpr=window.devicePixelRatio||1; cvs.width=Math.round(r.width*dpr); cvs.height=Math.round(132*dpr);
+  var ectx=cvs.getContext('2d'); ectx.setTransform(dpr,0,0,dpr,0,0);
+  var W=r.width, startX=42, ppb=(W-60)/4, staffY=86, stemTop=staffY-44;
+  var cm=compileMeasure(curEls()); var ch=buildChart([cm.fn]);
+  edHit=cm.items.map(function(it){ return {x:startX+it.rel*ppb, el:it.el, cell:it.cell}; });
+  var old=ctx; ctx=ectx;
+  ctx.clearRect(0,0,W,132);
+  if(sel && curEls()[sel.el]){
+    var its=cm.items.filter(function(it){ return it.el===sel.el; });
+    if(its.length){ var x0=startX+its[0].rel*ppb-16, x1=startX+(its[its.length-1].rel+its[its.length-1].dur)*ppb+16; ctx.fillStyle='rgba(245,179,1,.30)'; ctx.fillRect(x0,14,x1-x0,106); }
+  }
+  ctx.strokeStyle='#111'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(6,staffY); ctx.lineTo(W-6,staffY); ctx.stroke();
+  ctx.lineWidth=1.6; ctx.beginPath(); ctx.moveTo(startX-16,staffY-28); ctx.lineTo(startX-16,staffY+10); ctx.stroke();
+  ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(startX+4*ppb+14,staffY-28); ctx.lineTo(startX+4*ppb+14,staffY+10); ctx.stroke();
+  ctx.fillStyle='#777'; ctx.font='700 10px "IBM Plex Mono",monospace'; ctx.textAlign='left'; ctx.fillText(String(curMeasure+1), startX-11, staffY-36);
+  ch.rests.forEach(function(rst){ var x=startX+rst.beat*ppb; var cx=rst.dur>=1 ? x+(rst.dur*ppb)/2-ppb*0.1 : x+6; drawRest(cx,staffY,rst.kind); });
+  ch.groups.forEach(function(g){
+    var xs=g.notes.map(function(n){ return startX+n.beat*ppb; });
+    ctx.fillStyle='#111'; var top=stemTop;
+    ctx.fillRect(xs[0]+9, top, xs[xs.length-1]-xs[0], 5);
+    if(g.beam==='double'){ ctx.fillRect(xs[0]+9, top+9, xs[xs.length-1]-xs[0], 5); }
+    (g.stubs||[]).forEach(function(s){
+      if(s.t==='span'){ ctx.fillRect(xs[s.a]+9, top+9, xs[s.b]-xs[s.a], 5); }
+      else if(s.d==='right'){ ctx.fillRect(xs[s.i]+9, top+9, Math.min(22,ppb*0.22), 5); }
+      else { ctx.fillRect(xs[s.i]+9-Math.min(22,ppb*0.22), top+9, Math.min(22,ppb*0.22), 5); }
+    });
+    if(g.tuplet){ ctx.font='italic 900 17px Georgia,serif'; ctx.textAlign='center'; ctx.fillText(String(g.tuplet), (xs[0]+xs[xs.length-1])/2+5, top-10); ctx.textAlign='left'; }
+  });
+  ch.notes.forEach(function(n){
+    var x=startX+n.beat*ppb;
+    ctx.strokeStyle='#111'; ctx.fillStyle='#111'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(x+9, staffY-3); ctx.lineTo(x+9, stemTop+(n.grouped?5:0)); ctx.stroke();
+    ctx.save(); ctx.translate(x,staffY); ctx.rotate(-0.32); ctx.beginPath(); ctx.ellipse(0,0,9.5,6.8,0,0,Math.PI*2);
+    if(n.dur>=2){ ctx.fillStyle='#fff'; ctx.fill(); ctx.strokeStyle='#111'; ctx.lineWidth=2.2; ctx.stroke(); } else ctx.fill();
+    ctx.restore();
+    if(n.dot){ ctx.fillStyle='#111'; ctx.beginPath(); ctx.ellipse(x+18,staffY-7,2.6,2.6,0,0,Math.PI*2); ctx.fill(); }
+    if(n.flam){
+      var gx=x-21;
+      ctx.strokeStyle='#111'; ctx.fillStyle='#111'; ctx.lineWidth=1.7;
+      ctx.beginPath(); ctx.moveTo(gx+6, staffY-2); ctx.lineTo(gx+6, staffY-25); ctx.stroke();
+      ctx.save(); ctx.translate(gx,staffY); ctx.rotate(-0.32); ctx.beginPath(); ctx.ellipse(0,0,6.2,4.4,0,0,Math.PI*2); ctx.fill(); ctx.restore();
+      ctx.beginPath(); ctx.moveTo(gx+0.5, staffY-10); ctx.lineTo(gx+11, staffY-23); ctx.stroke();
+    }
+    if(!n.grouped){ if(n.dur===0.5) drawFlag(x+9,stemTop,1); else if(n.dur===0.25) drawFlag(x+9,stemTop,2); }
+  });
+  ctx=old;
+}
+function syncDraftMeta(){
+  var nm=document.getElementById('edName').value.trim();
+  draft.name=nm||'My rhythm';
+  var b=parseInt(document.getElementById('edBpm').value,10);
+  draft.bpm=(b>=30&&b<=200)?b:67;
+}
+function firstIncomplete(){
+  for(var i=0;i<draft.measures.length;i++){ if(Math.abs(measBeats(draft.measures[i])-4)>EPS) return i; }
+  return -1;
+}
+function loadIntoEditor(entry){
+  draft={name:entry.name||'My rhythm', bpm:entry.bpm||67, measures:JSON.parse(JSON.stringify(entry.measures||[[]]))};
+  if(!draft.measures.length) draft.measures=[[]];
+  curMeasure=0; sel=null; edHistory=[];
+  document.getElementById('edName').value=draft.name;
+  document.getElementById('edBpm').value=draft.bpm;
+  document.getElementById('edDay').value=entry.day||'';
+  edSetMsg(''); renderEditor();
+}
+function playCustom(def,label){
+  dayDef=def; selectedDay=0;
+  chart=buildChart(def.measures); notes=chart.notes; rests=chart.rests; groups=chart.groups; buildOnsets();
+  finished=false;
+  document.getElementById('results').classList.remove('on');
+  document.getElementById('metaDay').innerHTML='<b>'+label+'</b>';
+  document.getElementById('metaDate').innerHTML='<b>Custom rhythm</b>';
+  document.getElementById('metaBpm').textContent=def.bpm;
+  document.getElementById('metaMeasures').textContent=chart.measures;
+  document.getElementById('metaNotes').textContent=notes.length;
+  document.getElementById('dayBlurb').textContent=def.blurb||'';
+  document.getElementById('dayDetail').innerHTML=def.detail||'';
+  document.getElementById('measureLabel').textContent='Measure – / '+chart.measures;
+  document.getElementById('progBar').style.width='0%';
+  renderArchive(); updateHUD(); updateAttemptsUI();
+  if(location.hash==='#/admin'){ location.hash=''; }
+  applyRoute();
+  startGame();
+}
+function renderLib(){
+  var wrap=document.getElementById('libList'); wrap.innerHTML='';
+  if(!libRhythms.length){ wrap.innerHTML='<p class="sec-d">Nothing saved yet.</p>'; return; }
+  libRhythms.forEach(function(entry,idx){
+    var div=document.createElement('div'); div.className='lib-item';
+    var head=document.createElement('div');
+    var ln=document.createElement('span'); ln.className='ln'; ln.textContent=entry.name||'Untitled'; head.appendChild(ln);
+    if(entry.day){ var db=document.createElement('span'); db.className='daybadge'; db.textContent='Day '+entry.day; head.appendChild(db); }
+    var lm=document.createElement('div'); lm.className='lm'; lm.textContent='♩ = '+entry.bpm+' · '+entry.measures.length+' measures';
+    var btns=document.createElement('div'); btns.className='lib-btns';
+    var pb=document.createElement('button'); pb.type='button'; pb.className='abtn primary'; pb.textContent='▶ Play';
+    pb.addEventListener('click',function(){ playCustom(defFromElements(entry), entry.name||'Custom rhythm'); });
+    var eb=document.createElement('button'); eb.type='button'; eb.className='abtn'; eb.textContent='Edit';
+    eb.addEventListener('click',function(){ loadIntoEditor(entry); window.scrollTo({top:0,behavior:'smooth'}); });
+    var xb=document.createElement('button'); xb.type='button'; xb.className='abtn'; xb.textContent='Delete';
+    xb.addEventListener('click',function(){
+      if(xb.getAttribute('data-arm')==='1'){ libRhythms.splice(idx,1); saveLib(); renderLib(); renderArchive(); }
+      else { xb.setAttribute('data-arm','1'); xb.textContent='Tap again to delete'; setTimeout(function(){ xb.removeAttribute('data-arm'); xb.textContent='Delete'; },2500); }
+    });
+    btns.appendChild(pb); btns.appendChild(eb); btns.appendChild(xb);
+    div.appendChild(head); div.appendChild(lm); div.appendChild(btns);
+    wrap.appendChild(div);
+  });
+}
+
+/* ---------- admin wiring ---------- */
+document.querySelectorAll('#durChips .chip').forEach(function(chip){
+  chip.addEventListener('click',function(){
+    var base=parseFloat(chip.getAttribute('data-dur'));
+    var eff=base*(edDot?1.5:1); var used=measBeats(curEls());
+    if(used+eff>4+EPS){ edSetMsg('That would overflow the measure: it needs '+fmtB(eff)+' beats and only '+fmtB(Math.max(0,4-used))+' left. Pick something shorter, or delete a note first.'); return; }
+    pushHistory();
+    var el={t: edMode==='rest'?'r':'n', d:base}; if(edDot) el.dot=true;
+    var msg='';
+    if(edFlam){
+      if(el.t==='n'){ el.flam=true; }
+      else msg='Flams go on notes, not rests, so that went in as a plain rest.';
+      edFlam=false;
+    }
+    curEls().push(el);
+    sel={el:curEls().length-1, cell:null};
+    edSetMsg(msg,true);
+    renderEditor();
+  });
+});
+document.querySelectorAll('#tupChips .chip').forEach(function(chip){
+  chip.addEventListener('click',function(){
+    var size=parseInt(chip.getAttribute('data-tup'),10);
+    var used=measBeats(curEls());
+    if(used+1>4+EPS){ edSetMsg('A tuplet group needs a whole beat, and only '+fmtB(Math.max(0,4-used))+' beats are left in this measure.'); return; }
+    pushHistory();
+    var cells=[]; for(var i=0;i<size;i++) cells.push(1);
+    var msg='';
+    if(edFlam){ msg='Flams do not apply inside tuplet groups, so the group went in plain.'; edFlam=false; }
+    curEls().push({t:'t', n:size, cells:cells});
+    sel={el:curEls().length-1, cell:null};
+    edSetMsg(msg,true);
+    renderEditor();
+  });
+});
+document.getElementById('modeNote').addEventListener('click',function(){ edMode='note'; syncToggles(); });
+document.getElementById('modeRest').addEventListener('click',function(){ edMode='rest'; syncToggles(); });
+document.getElementById('dotTgl').addEventListener('click',function(){ edDot=!edDot; syncToggles(); });
+document.getElementById('flamTgl').addEventListener('click',function(){ edFlam=!edFlam; syncToggles(); if(edFlam) edSetMsg('Flam is on: the next single note you add gets a grace note. Rests and tuplets cannot take a flam.',true); });
+document.getElementById('prevMeas').addEventListener('click',function(){ if(curMeasure>0){ curMeasure--; sel=null; renderEditor(); } });
+document.getElementById('nextMeas').addEventListener('click',function(){ if(curMeasure<draft.measures.length-1){ curMeasure++; sel=null; renderEditor(); } });
+document.getElementById('addMeas').addEventListener('click',function(){ if(draft.measures.length>=8) return; pushHistory(); draft.measures.push([]); curMeasure=draft.measures.length-1; sel=null; renderEditor(); });
+document.getElementById('delMeas').addEventListener('click',function(){ if(draft.measures.length<=1) return; pushHistory(); draft.measures.splice(curMeasure,1); curMeasure=Math.min(curMeasure,draft.measures.length-1); sel=null; renderEditor(); });
+document.getElementById('flipBtn').addEventListener('click',function(){
+  if(!sel || !curEls()[sel.el]){ edSetMsg('Tap a note or rest in the preview first, then flip it.'); return; }
+  var el=curEls()[sel.el];
+  if(el.t==='t'){
+    if(sel.cell===null||sel.cell===undefined){ edSetMsg('That is a tuplet group. Tap one note inside it to flip just that note between note and rest.'); return; }
+    pushHistory(); el.cells[sel.cell]=el.cells[sel.cell]?0:1; renderEditor(); return;
+  }
+  pushHistory();
+  el.t = el.t==='n' ? 'r' : 'n';
+  if(el.t==='r') delete el.flam;
+  renderEditor();
+});
+document.getElementById('dotBtn').addEventListener('click',function(){
+  if(!sel || !curEls()[sel.el]){ edSetMsg('Tap a note or rest in the preview first.'); return; }
+  var el=curEls()[sel.el];
+  if(el.t==='t'){ edSetMsg('Dots apply to single notes and rests, not to tuplet groups.'); return; }
+  if(!el.dot && measBeats(curEls())+el.d*0.5>4+EPS){ edSetMsg('Adding a dot would overflow the measure: it adds '+fmtB(el.d*0.5)+' beats and only '+fmtB(Math.max(0,4-measBeats(curEls())))+' are left.'); return; }
+  pushHistory();
+  if(el.dot) delete el.dot; else el.dot=true;
+  renderEditor();
+});
+document.getElementById('flamBtn').addEventListener('click',function(){
+  if(!sel || !curEls()[sel.el]){ edSetMsg('Tap a note in the preview first.'); return; }
+  var el=curEls()[sel.el];
+  if(el.t!=='n'){ edSetMsg('Flams apply to single notes only: not rests, and not notes inside tuplet groups.'); return; }
+  pushHistory();
+  if(el.flam) delete el.flam; else el.flam=true;
+  edSetMsg(el.flam?'Flam on: tap the small grace note just before the beat, then the beat itself.':'Flam off.',true);
+  renderEditor();
+});
+document.getElementById('delElBtn').addEventListener('click',function(){
+  if(!sel || !curEls()[sel.el]){ edSetMsg('Tap something in the preview first, then delete it.'); return; }
+  pushHistory(); curEls().splice(sel.el,1); sel=null; renderEditor();
+});
+document.getElementById('undoBtn').addEventListener('click',function(){
+  if(!edHistory.length){ edSetMsg('Nothing to undo.'); return; }
+  draft=JSON.parse(edHistory.pop());
+  curMeasure=Math.min(curMeasure,draft.measures.length-1); sel=null;
+  document.getElementById('edName').value=draft.name;
+  document.getElementById('edBpm').value=draft.bpm;
+  renderEditor();
+});
+document.getElementById('clearMeasBtn').addEventListener('click',function(){ pushHistory(); draft.measures[curMeasure]=[]; sel=null; renderEditor(); });
+document.getElementById('edName').addEventListener('input',syncDraftMeta);
+document.getElementById('edBpm').addEventListener('change',syncDraftMeta);
+document.getElementById('edCanvas').addEventListener('pointerdown',function(e){
+  var r=this.getBoundingClientRect(); var x=e.clientX-r.left, y=e.clientY-r.top;
+  var best=null,bd=1e9;
+  edHit.forEach(function(hh){ var d=Math.abs(hh.x-x); if(d<bd){ bd=d; best=hh; } });
+  if(best && bd<38 && Math.abs(y-86)<56){ sel={el:best.el, cell:best.cell}; edSetMsg(''); renderEditor(); }
+});
+document.getElementById('playDraftBtn').addEventListener('click',function(){
+  syncDraftMeta();
+  var bad=firstIncomplete();
+  if(bad>=0){ curMeasure=bad; sel=null; renderEditor(); edSetMsg('Measure '+(bad+1)+' is at '+fmtB(measBeats(draft.measures[bad]))+' / 4 beats. A rhythm can only be played when every measure sums to exactly 4.'); return; }
+  playCustom(defFromElements({name:draft.name, bpm:draft.bpm, measures:draft.measures}), draft.name);
+});
+document.getElementById('saveBtn').addEventListener('click',function(){
+  syncDraftMeta();
+  var sm=document.getElementById('saveMsg');
+  var bad=firstIncomplete();
+  if(bad>=0){ sm.textContent='Measure '+(bad+1)+' is at '+fmtB(measBeats(draft.measures[bad]))+' / 4 beats. Every measure must sum to exactly 4 before saving.'; sm.className='ed-msg'; return; }
+  var dayVal=parseInt(document.getElementById('edDay').value,10);
+  var entry={id:Date.now(), name:draft.name, bpm:draft.bpm, measures:JSON.parse(JSON.stringify(draft.measures))};
+  if(dayVal>=1&&dayVal<=9999) entry.day=dayVal;
+  libRhythms.push(entry); saveLib(); renderLib();
+  sm.textContent='Saved \u201C'+entry.name+'\u201D to My rhythms.'+(entry.day?' Day '+entry.day+' now uses this rhythm on this device.':'');
+  sm.className='ed-msg ed-ok';
+  renderArchive();
+  if(entry.day && entry.day===selectedDay) loadDay(selectedDay);
+});
+document.getElementById('exportBtn').addEventListener('click',function(){
+  syncDraftMeta();
+  var obj={app:'sreadle', version:1, name:draft.name, bpm:draft.bpm, measures:draft.measures};
+  var dayVal=parseInt(document.getElementById('edDay').value,10);
+  if(dayVal>=1&&dayVal<=9999) obj.day=dayVal;
+  var txt=JSON.stringify(obj);
+  var box=document.getElementById('exText'); box.value=txt;
+  if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).then(function(){ edSetMsg('Exported and copied to the clipboard.',true); },function(){ edSetMsg('Exported in the box below. Copy it from there.',true); }); }
+  else edSetMsg('Exported in the box below. Copy it from there.',true);
+});
+document.getElementById('importBtn').addEventListener('click',function(){
+  var im=document.getElementById('imMsg');
+  var raw=document.getElementById('imText').value.trim();
+  var parsed=null;
+  try{ parsed=JSON.parse(raw); }catch(e){}
+  var clean=parsed?sanitizeRhythm(parsed):null;
+  if(!clean){ im.textContent='That JSON did not import. It needs name, bpm, and measures where every measure sums to exactly 4 beats, in the creator\u2019s element format.'; im.className='ed-msg'; return; }
+  clean.id=Date.now();
+  libRhythms.push(clean); saveLib(); renderLib(); renderArchive();
+  im.textContent='Imported \u201C'+clean.name+'\u201D into My rhythms.'+(clean.day?' Day '+clean.day+' now uses it on this device.':'');
+  im.className='ed-msg ed-ok';
+});
+document.getElementById('editDayBtn').addEventListener('click',function(){
+  if(playing) return;
+  var def=dayDef;
+  var entry={name: selectedDay>=1 ? 'Day '+selectedDay+' remix' : (def.title||'Custom rhythm'), bpm:def.bpm, measures:chartToElements(def)};
+  loadIntoEditor(entry);
+  location.hash='#/admin';
+  applyRoute();
+});
+
+/* ---------- routing ---------- */
+function applyRoute(){
+  var admin=location.hash==='#/admin';
+  if(admin && playing) quitRun();
+  document.getElementById('adminView').hidden=!admin;
+  document.getElementById('gameView').style.display=admin?'none':'';
+  if(admin){ renderEditor(); renderLib(); }
+  else { resizeCanvas(); if(!playing && !finished) draw(-0.55); }
+  window.scrollTo(0,0);
+}
+window.addEventListener('hashchange',applyRoute);
+
+/* ---------- attempts, sharing, deep links ---------- */
+var runJudged=false;
+function fmtAcc(x){ return (Math.round(x*10)/10).toFixed(1).replace(/\.0$/,''); }
+function attemptsUsed(n){ var r=stats.days[n]; return r&&r.attempts?r.attempts:0; }
+function attemptsLeft(n){ return Math.max(0,2-attemptsUsed(n)); }
+function isLocked(n){ return n>=1 && attemptsUsed(n)>=2; }
+function buildShareText(n,res){
+  return 'Sreadle #'+n+'\n'+fmtAcc(res.acc)+'% · Score '+res.score+'/1000 · Best combo '+res.combo+'\nAttempt '+res.attempt+' of 2\n'+res.squares+'\nhttps://theoliviawales.github.io/sreadle/?day='+n;
+}
+function legacyCopy(txt){
+  var ta=document.createElement('textarea'); ta.value=txt; ta.style.position='fixed'; ta.style.opacity='0';
+  document.body.appendChild(ta); ta.select();
+  try{ document.execCommand('copy'); }catch(e){}
+  document.body.removeChild(ta);
+}
+function shareResult(text,btn){
+  function copied(){ if(btn){ var t=btn.getAttribute('data-label')||btn.textContent; btn.setAttribute('data-label',t); btn.textContent='Copied ✓'; setTimeout(function(){ btn.textContent=t; },1800); } }
+  if(navigator.share){ navigator.share({title:'Sreadle', text:text}).catch(function(){}); return; }
+  if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(text).then(copied,function(){ legacyCopy(text); copied(); }); }
+  else { legacyCopy(text); copied(); }
+}
+function updateAttemptsUI(){
+  var info=document.getElementById('attemptsInfo');
+  var sb=document.getElementById('startBtn');
+  var shb=document.getElementById('shareBestBtn');
+  var tt=document.getElementById('todayAttempts');
+  if(tt){
+    var trec=stats.days[todayNum];
+    tt.textContent = isLocked(todayNum)
+      ? 'Today\u2019s puzzle is locked · Best '+(trec&&trec.bestResult ? fmtAcc(trec.bestResult.acc)+'% · '+trec.bestResult.score+'/1000' : 'no finished run')
+      : 'Attempts left for today\u2019s puzzle: '+attemptsLeft(todayNum)+' of 2';
+  }
+  if(!info||!sb) return;
+  if(selectedDay===0){
+    info.textContent='Custom rhythm · unlimited plays';
+    sb.disabled=false; sb.textContent='▶ Start · Count-in';
+    if(shb) shb.hidden=true;
+    return;
+  }
+  var rec=stats.days[selectedDay];
+  if(isLocked(selectedDay)){
+    info.textContent='🔒 This puzzle is locked: both attempts are used.';
+    sb.disabled=true;
+    sb.textContent='🔒 Locked'+(rec&&rec.bestResult ? ' · Best '+fmtAcc(rec.bestResult.acc)+'% · '+rec.bestResult.score+'/1000' : ' · no finished run');
+  } else {
+    info.textContent='Attempts left: '+attemptsLeft(selectedDay)+' of 2';
+    sb.disabled=false; sb.textContent='▶ Start Day '+selectedDay+' · Count-in';
+  }
+  if(shb) shb.hidden = !(rec && rec.bestResult);
+}
+function quitRun(){
+  if(!playing) return;
+  playing=false; finished=false;
+  if(rafId) cancelAnimationFrame(rafId);
+  document.body.classList.remove('playing');
+  document.getElementById('countIn').classList.remove('on');
+  document.getElementById('quitBtn').hidden=true;
+  stopSilentLoop();
+  if(selectedDay>=1 && runJudged){
+    var rec=stats.days[selectedDay]||{done:false,best:0,attempts:0,results:[]};
+    rec.attempts=(rec.attempts||0)+1;
+    stats.days[selectedDay]=rec;
+    saveStats(); renderStats(); renderArchive();
+    document.getElementById('feedback').textContent='Run stopped partway. That used one of your 2 attempts for this puzzle.';
+  } else {
+    document.getElementById('feedback').textContent='Run stopped.';
+  }
+  runJudged=false;
+  updateAttemptsUI();
+  draw(-0.55);
+}
+function deepLinkDay(){
+  var mS=(location.search||'').match(/[?&]day=(\d+)/);
+  var mH=(location.hash||'').match(/day=(\d+)/);
+  var n=mS?parseInt(mS[1],10):(mH?parseInt(mH[1],10):null);
+  if(n && n>=1 && n<=todayNum) return n;
+  return null;
+}
+var initialDay=deepLinkDay()||todayNum;
+
+/* ---------- init ---------- */
+document.getElementById('todayTitle').textContent='Today: Sreadle #'+todayNum;
+document.getElementById('todaySub').textContent=dateLabelFor(todayNum)+' · a new rhythm unlocks every day at midnight, Seattle time.';
+resizeCanvas();
+loadDay(initialDay);
+renderStats();
+applyRoute();
+})();
+</script>
+</body>
+</html>
