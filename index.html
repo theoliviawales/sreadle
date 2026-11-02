@@ -1690,7 +1690,7 @@ function isLocked(n){ return n>=1 && attemptsUsed(n)>=2; }
 function buildShareText(n,res){
   var line2=fmtAcc(res.acc)+'% · Score '+res.score+'/1000 · Best combo '+res.combo;
   if(res.slowAid) line2+=' at 0.75x';
-  return 'Sreadle #'+n+'\n'+line2+'\nAttempt '+res.attempt+' of 2\n'+res.squares+'\nhttps://theoliviawales.github.io/sreadle/?day='+n;
+  return 'Sreadle #'+n+'\n'+line2+'\nAttempt '+res.attempt+' of 2\n'+res.squares+'\nhttps://sreadle.pages.dev/?day='+n;
 }
 function legacyCopy(txt){
   var ta=document.createElement('textarea'); ta.value=txt; ta.style.position='fixed'; ta.style.opacity='0';

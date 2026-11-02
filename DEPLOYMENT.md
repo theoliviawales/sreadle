@@ -175,7 +175,7 @@ failing the run.
   phones, clipboard fallback) produces Wordle-style text: puzzle number,
   accuracy, score, best combo, which attempt it was, per-measure
   green/yellow/red squares, and a deep link to that exact puzzle,
-  `https://theoliviawales.github.io/sreadle/?day=N`. The page reads the
+  `https://sreadle.pages.dev/?day=N`. The page reads the
   `?day=N` parameter on load and opens that puzzle directly. Add Open Graph
   meta tags and a 1200x630 share image so links pasted into chats and social
   apps unfurl with a title and picture.
