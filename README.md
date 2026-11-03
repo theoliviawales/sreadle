@@ -29,8 +29,9 @@ percentage, and a streak to keep alive.
 
 ## Creating rhythms (admin page)
 
-The game includes a phone-friendly admin page (the Create/Admin button in the
-game, hash route `#/admin`) for composing new rhythms: pick durations and
+The game includes a phone-friendly admin page (same file, reached only by a
+private unlinked hash route that is not published here) for composing new
+rhythms: pick durations and
 tuplets (3, 5, 6, 7), flip notes to rests, dot notes, add flams (a grace note
 just before a main note, played as two quick taps), preview with real
 notation, and test-play before saving. Saved rhythms stay in the browser;

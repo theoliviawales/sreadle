@@ -301,7 +301,6 @@ body.playing #tapPad{order:9;flex:1 1 auto;min-height:104px;margin-top:auto;disp
       <button id="helpBtn" type="button" aria-label="How to play" title="How to play">?</button>
       <button id="statsBtn" type="button" aria-label="Your statistics" title="Statistics"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="4" y="12" width="4" height="8" rx="1"/><rect x="10" y="7" width="4" height="13" rx="1"/><rect x="16" y="3" width="4" height="17" rx="1"/></svg></button>
       <button id="archiveBtn" type="button" aria-label="Archive of past puzzles" title="Archive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></button>
-      <a id="createBtn" href="#/admin" aria-label="Create and admin: build your own rhythms" title="Create / Admin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg></a>
     </nav>
   </div>
 </header>
@@ -1387,7 +1386,7 @@ function playCustom(def,label){
   document.getElementById('measureLabel').textContent='Measure – / '+chart.measures;
   document.getElementById('progBar').style.width='0%';
   renderArchive(); updateHUD(); updateAttemptsUI();
-  if(location.hash==='#/admin'){ location.hash=''; }
+  if(location.hash==='#/creator-72331f3e70bad9'){ location.hash=''; }
   applyRoute();
   startGame();
 }
@@ -1554,7 +1553,7 @@ document.getElementById('importBtn').addEventListener('click',function(){
 });
 /* ---------- routing ---------- */
 function applyRoute(){
-  var admin=location.hash==='#/admin';
+  var admin=location.hash==='#/creator-72331f3e70bad9';
   if(admin && playing) quitRun();
   document.getElementById('adminView').hidden=!admin;
   document.getElementById('gameView').style.display=admin?'none':'';
@@ -1676,7 +1675,7 @@ document.getElementById('helpGotIt').addEventListener('click',function(){ closeM
 document.getElementById('statsBtn').addEventListener('click',function(){ renderStats(); openModal('statsModal'); });
 document.getElementById('statsClose').addEventListener('click',function(){ closeModal('statsModal'); });
 document.getElementById('archiveBtn').addEventListener('click',function(){
-  if(location.hash==='#/admin'){ location.hash=''; }
+  if(location.hash==='#/creator-72331f3e70bad9'){ location.hash=''; }
   var p=document.getElementById('archivePanel'); if(!p) return;
   p.hidden=!p.hidden;
   if(!p.hidden) p.scrollIntoView({behavior:'smooth',block:'start'});

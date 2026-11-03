@@ -74,8 +74,8 @@ the database binding were verified at launch on November 2, 2026.
 
 ## Admin page: creating new rhythms
 
-The game ships with a built-in admin page (same `index.html`, opened from the
-home screen's Create/Admin button, hash route `#/admin`) designed for a
+The game ships with a built-in admin page (same `index.html`, reached only by
+a private unlinked hash route that is not published here) designed for a
 phone:
 
 - Build a 4/4 measure element by element: duration chips (half, dotted
