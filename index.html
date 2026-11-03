@@ -425,6 +425,7 @@ body.playing #tapPad{order:9;flex:1 1 auto;min-height:104px;margin-top:auto;disp
       <button class="chip" type="button" data-dur="1">Quarter<small data-eff>1 beat</small></button>
       <button class="chip" type="button" data-dur="0.5">Eighth<small data-eff>0.5 beats</small></button>
       <button class="chip" type="button" data-dur="0.25">Sixteenth<small data-eff>0.25 beats</small></button>
+      <button class="chip" type="button" data-dur="0.125">Thirty-second<small data-eff>0.125 beats</small></button>
     </div>
 
     <div class="fld"><label>Tuplet group (fills 1 beat)</label>
@@ -570,12 +571,12 @@ function buildChart(measureFns){
      length inside one beat share a beam at the top of their stems (this is
      what ties flammed eighth notes together; they used to fall out of every
      beamed group and render with separate flags). */
-  var cand=st.notes.filter(function(n){ return !n.grouped && !n.tuplet && (n.dur===0.5||n.dur===0.25); });
+  var cand=st.notes.filter(function(n){ return !n.grouped && !n.tuplet && (n.dur===0.5||n.dur===0.25||n.dur===0.125); });
   var run=[];
   function flushRun(){
     if(run.length>=2){
       run.forEach(function(n){ n.grouped=true; });
-      st.groups.push({notes:run.slice(), beam:run[0].dur<=0.3?'double':'single', tuplet:null, stubs:[], measure:run[0].measure});
+      st.groups.push({notes:run.slice(), beam:run[0].dur<=0.16?'triple':run[0].dur<=0.3?'double':'single', tuplet:null, stubs:[], measure:run[0].measure});
     }
     run=[];
   }
@@ -986,6 +987,11 @@ function drawRest(x,y,kind){
     ctx.beginPath(); ctx.ellipse(x-2,y-18,4.2,3,-0.6,0,Math.PI*2); ctx.fill();
     ctx.beginPath(); ctx.ellipse(x-3,y-6,4.2,3,-0.6,0,Math.PI*2); ctx.fill();
     ctx.beginPath(); ctx.moveTo(x+2,y-18); ctx.quadraticCurveTo(x-3,y-2,x-6,y+15); ctx.stroke();
+  } else if(kind==='thirtysecond'){
+    ctx.beginPath(); ctx.ellipse(x-2,y-21,4,2.9,-0.6,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(x-3,y-12,4,2.9,-0.6,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(x-3,y-3,4,2.9,-0.6,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(x+2,y-21); ctx.quadraticCurveTo(x-3,y-5,x-6,y+15); ctx.stroke();
   } else if(kind==='half'){
     ctx.fillRect(x-9,y-7,18,6);
     ctx.font='600 9px Archivo,sans-serif'; ctx.fillStyle='#555'; ctx.fillText('half rest',x-16,y+20);
@@ -1030,8 +1036,11 @@ function draw(currentBeat){
     var top=stemTop;
     ctx.fillRect(xs[0]+9, top, xs[xs.length-1]-xs[0], 5);
     if(g.beam==='double'){ ctx.fillRect(xs[0]+9, top+9, xs[xs.length-1]-xs[0], 5); }
+    if(g.beam==='triple'){ ctx.fillRect(xs[0]+9, top+9, xs[xs.length-1]-xs[0], 5); ctx.fillRect(xs[0]+9, top+18, xs[xs.length-1]-xs[0], 5); }
     (g.stubs||[]).forEach(function(s){
       if(s.t==='span'){ ctx.fillRect(xs[s.a]+9, top+9, xs[s.b]-xs[s.a], 5); }
+      else if(s.t==='span3'){ ctx.fillRect(xs[s.a]+9, top+18, xs[s.b]-xs[s.a], 5); }
+      else if(s.t==='stub3'){ if(s.d==='right'){ ctx.fillRect(xs[s.i]+9, top+18, 22, 5); } else { ctx.fillRect(xs[s.i]+9-22, top+18, 22, 5); } }
       else if(s.d==='right'){ ctx.fillRect(xs[s.i]+9, top+9, 22, 5); }
       else { ctx.fillRect(xs[s.i]+9-22, top+9, 22, 5); }
     });
@@ -1058,6 +1067,7 @@ function draw(currentBeat){
     if(!n.grouped){
       if(n.dur===0.5) drawFlag(x+9,stemTop,1);
       else if(n.dur===0.25) drawFlag(x+9,stemTop,2);
+      else if(n.dur===0.125) drawFlag(x+9,stemTop,3);
     }
   });
   ctx.fillStyle='#f5b301'; ctx.fillRect(playX-2,8,4,H-16);
@@ -1317,6 +1327,7 @@ function compileMeasure(elements){
       else{
         var list=run.map(function(it){ return h.n(it.rel,it.dur, (it.dot||it.flam)?{dot:it.dot,flam:it.flam}:{}); });
         var allShort=run.every(function(it){ return it.dur<=0.3; });
+        var all32=run.every(function(it){ return it.dur<=0.16; });
         var stubs=[];
         run.forEach(function(it,i){
           if(it.dur<0.5){
@@ -1326,8 +1337,15 @@ function compileMeasure(elements){
             else if(next) stubs.push({t:'stub',i:i,d:'right'});
             else if(prev) stubs.push({t:'stub',i:i,d:'left'});
           }
+          if(it.dur<=0.16 && !all32){
+            var p3=run[i-1], n3=run[i+1];
+            if(n3 && n3.dur<=0.16) stubs.push({t:'span3',a:i,b:i+1});
+            else if(p3 && p3.dur<=0.16){ /* covered by the span3 from prev */ }
+            else if(n3) stubs.push({t:'stub3',i:i,d:'right'});
+            else if(p3) stubs.push({t:'stub3',i:i,d:'left'});
+          }
         });
-        h.g(list, allShort?'double':'single', null, stubs);
+        h.g(list, all32?'triple':allShort?'double':'single', null, stubs);
       }
       run=[];
     }
@@ -1341,7 +1359,7 @@ function compileMeasure(elements){
         if(tnotes.length>=2) h.g(tnotes, size===3?'single':'double', size);
         i+=size; continue;
       }
-      if(it.kind==='rest'){ flush(); h.r(it.rel,it.dur, it.dur>=2?'half':it.dur>=1?'quarter':it.dur>=0.5?'eighth':'sixteenth'); i++; continue; }
+      if(it.kind==='rest'){ flush(); h.r(it.rel,it.dur, it.dur>=2?'half':it.dur>=1?'quarter':it.dur>=0.5?'eighth':it.dur>=0.25?'sixteenth':'thirtysecond'); i++; continue; }
       if(it.dur<=0.75){
         var sameBeat = run.length===0 || (Math.floor(it.rel)===Math.floor(run[0].rel) && it.rel+it.dur<=Math.floor(it.rel)+1.001);
         if(sameBeat) run.push(it);
@@ -1435,7 +1453,7 @@ function edSetMsg(t,ok){ var m=document.getElementById('edMsg'); m.textContent=t
 function pushHistory(){ edHistory.push(JSON.stringify(draft)); if(edHistory.length>60) edHistory.shift(); }
 function describeEl(el,cell){
   if(el.t==='t') return 'tuplet of '+el.n+(cell!=null&&cell!==undefined ? ' · note '+(cell+1)+' of the group ('+(el.cells[cell]?'note':'rest')+')' : ' · tap one of its notes to flip just that note');
-  var names={'2':'half','1':'quarter','0.5':'eighth','0.25':'sixteenth'};
+  var names={'2':'half','1':'quarter','0.5':'eighth','0.25':'sixteenth','0.125':'thirty-second'};
   var nm=(el.dot?'dotted ':'')+(names[String(el.d)]||fmtB(el.d)+'-beat');
   return nm+' '+(el.t==='r'?'rest':'note')+(el.flam?' · with flam':'');
 }
@@ -1489,8 +1507,11 @@ function drawEdPreview(){
     ctx.fillStyle='#111'; var top=stemTop;
     ctx.fillRect(xs[0]+9, top, xs[xs.length-1]-xs[0], 5);
     if(g.beam==='double'){ ctx.fillRect(xs[0]+9, top+9, xs[xs.length-1]-xs[0], 5); }
+    if(g.beam==='triple'){ ctx.fillRect(xs[0]+9, top+9, xs[xs.length-1]-xs[0], 5); ctx.fillRect(xs[0]+9, top+18, xs[xs.length-1]-xs[0], 5); }
     (g.stubs||[]).forEach(function(s){
       if(s.t==='span'){ ctx.fillRect(xs[s.a]+9, top+9, xs[s.b]-xs[s.a], 5); }
+      else if(s.t==='span3'){ ctx.fillRect(xs[s.a]+9, top+18, xs[s.b]-xs[s.a], 5); }
+      else if(s.t==='stub3'){ if(s.d==='right'){ ctx.fillRect(xs[s.i]+9, top+18, Math.min(22,ppb*0.22), 5); } else { ctx.fillRect(xs[s.i]+9-Math.min(22,ppb*0.22), top+18, Math.min(22,ppb*0.22), 5); } }
       else if(s.d==='right'){ ctx.fillRect(xs[s.i]+9, top+9, Math.min(22,ppb*0.22), 5); }
       else { ctx.fillRect(xs[s.i]+9-Math.min(22,ppb*0.22), top+9, Math.min(22,ppb*0.22), 5); }
     });
@@ -1511,7 +1532,7 @@ function drawEdPreview(){
       ctx.save(); ctx.translate(gx,staffY); ctx.rotate(-0.32); ctx.beginPath(); ctx.ellipse(0,0,6.2,4.4,0,0,Math.PI*2); ctx.fill(); ctx.restore();
       ctx.beginPath(); ctx.moveTo(gx+0.5, staffY-10); ctx.lineTo(gx+11, staffY-23); ctx.stroke();
     }
-    if(!n.grouped){ if(n.dur===0.5) drawFlag(x+9,stemTop,1); else if(n.dur===0.25) drawFlag(x+9,stemTop,2); }
+    if(!n.grouped){ if(n.dur===0.5) drawFlag(x+9,stemTop,1); else if(n.dur===0.25) drawFlag(x+9,stemTop,2); else if(n.dur===0.125) drawFlag(x+9,stemTop,3); }
   });
   ctx=old;
 }
