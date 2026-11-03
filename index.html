@@ -310,7 +310,7 @@ body.playing #tapPad{order:9;flex:1 1 auto;min-height:104px;margin-top:auto;disp
   <div id="gameView">
   <div class="controls" aria-label="Game controls">
     <button id="metroBtn" type="button" aria-pressed="true">Metronome <span class="on" id="metroState">ON</span></button>
-    <button id="startBtn" type="button">▶ Start Day 1 · Count-in</button>
+    <button id="startBtn" type="button">▶ Start 11/2 · Count-in</button>
   </div>
 
   <div class="attempt-row">
@@ -344,7 +344,7 @@ body.playing #tapPad{order:9;flex:1 1 auto;min-height:104px;margin-top:auto;disp
   <div class="feedback" id="feedback">Press Start, hear the count-in, then tap on the line.</div>
 
   <section class="results" id="results" aria-live="polite">
-    <div class="dayline" id="finalDayLine">Sreadle #1 · Final accuracy</div>
+    <div class="dayline" id="finalDayLine">11/2 · Final accuracy</div>
     <div class="acc"><span id="finalAcc">0</span>%</div>
     <div class="score">Score <span id="finalScore">0</span> / 1000 · Best combo <span id="finalCombo">0</span>× · Extra taps <span id="finalExtra">0</span></div>
     <div class="score" id="attemptNote"></div>
@@ -370,7 +370,7 @@ body.playing #tapPad{order:9;flex:1 1 auto;min-height:104px;margin-top:auto;disp
 
   <div id="archivePanel" hidden>
   <h2 class="sec">Earlier days</h2>
-  <p class="sec-d">Every past puzzle stays playable. Days 1 to 10 are hand-written; from Day 11 on, each day's rhythm is generated from its puzzle number, so it is the same for every player, forever, with no server involved. A ✓ means you have finished that day.</p>
+  <p class="sec-d">Every past puzzle stays playable. Puzzles through 11/11 are hand-written; from 11/12 on, each day's rhythm is generated in your browser, the same for every player, forever, with no server involved. A ✓ means you have finished that day.</p>
   <div class="archive" id="archiveList" role="group" aria-label="Archive of past days"></div>
   </div>
 
@@ -753,6 +753,10 @@ function dateLabelFor(n){
   var d=new Date(DAY_ONE+(n-1)*86400000);
   return d.toLocaleDateString('en-US',{timeZone:'UTC',weekday:'short',month:'short',day:'numeric',year:'numeric'});
 }
+function shortDateFor(n){
+  var d=new Date(DAY_ONE+(n-1)*86400000);
+  return (d.getUTCMonth()+1)+'/'+d.getUTCDate();
+}
 
 /* ---------- stats (localStorage, best effort) ---------- */
 var LS_KEY='sreadle-stats-v1';
@@ -780,7 +784,7 @@ function renderStats(){
   var ul=document.getElementById('statsHistory');
   if(ul){
     ul.innerHTML='';
-    s.history.forEach(function(h){ var li=document.createElement('li'); var a=document.createElement('span'); a.textContent='Sreadle #'+h.day; var b=document.createElement('span'); b.textContent=(Math.round(h.acc*10)/10)+'%'; li.appendChild(a); li.appendChild(b); ul.appendChild(li); });
+    s.history.forEach(function(h){ var li=document.createElement('li'); var a=document.createElement('span'); a.textContent=shortDateFor(h.day); var b=document.createElement('span'); b.textContent=(Math.round(h.acc*10)/10)+'%'; li.appendChild(a); li.appendChild(b); ul.appendChild(li); });
     var emp=document.getElementById('statsHistoryEmpty'); if(emp) emp.style.display=s.history.length?'none':'';
   }
 }
@@ -851,10 +855,10 @@ function loadDay(n){
   counts={perfect:0,great:0,good:0,miss:0}; combo=0; bestCombo=0; extraTaps=0; weighted=0;
   finished=false;
   document.getElementById('results').classList.remove('on');
-  document.getElementById('startBtn').textContent='▶ Start Day '+n+' · Count-in';
+  document.getElementById('startBtn').textContent='▶ Start '+shortDateFor(n)+' · Count-in';
   document.getElementById('measureLabel').textContent='Measure – / '+chart.measures;
   document.getElementById('progBar').style.width='0%';
-  document.getElementById('feedback').textContent = n===todayNum ? 'Press Start, hear the count-in, then tap on the line.' : 'Day '+n+' loaded from the archive. Press Start when you are ready.';
+  document.getElementById('feedback').textContent = n===todayNum ? 'Press Start, hear the count-in, then tap on the line.' : shortDateFor(n)+' loaded from the archive. Press Start when you are ready.';
   renderArchive(); updateHUD(); updateAttemptsUI(); draw(-0.55);
 }
 function renderArchive(){
@@ -866,7 +870,7 @@ function renderArchive(){
       var b=document.createElement('button'); b.type='button'; b.className='day-btn';
       b.setAttribute('aria-pressed', n===selectedDay?'true':'false');
       var done=stats.days[n] && stats.days[n].done;
-      var html='<span class="dn">Day '+n+(done?' <span class="check">✓</span>':'')+'</span>';
+      var html='<span class="dn">'+shortDateFor(n)+(done?' <span class="check">✓</span>':'')+'</span>';
       html+='<span class="dm">♩ = '+def.bpm+' · '+def.measures.length+' meas.</span>';
       if(done) html+='<span class="best">Best '+stats.days[n].best+'/1000</span>';
       var usedA=stats.days[n]&&stats.days[n].attempts?stats.days[n].attempts:0;
@@ -1029,13 +1033,13 @@ function finish(){
   stopSilentLoop();
   document.getElementById('quitBtn').hidden=true;
   document.getElementById('countIn').classList.remove('on');
-  document.getElementById('startBtn').disabled=false; document.getElementById('startBtn').textContent='▶ Start Day '+selectedDay+' · Count-in';
+  document.getElementById('startBtn').disabled=false; document.getElementById('startBtn').textContent='▶ Start '+shortDateFor(selectedDay)+' · Count-in';
   document.getElementById('measureLabel').textContent='Measure '+chart.measures+' / '+chart.measures+' · Done';
   document.getElementById('progBar').style.width='100%';
   var finalAcc=Math.max(0, ((counts.perfect*100+counts.great*75+counts.good*50)/(totalOnsets*100))*100 - extraTaps*0.4);
   var finalScore=Math.max(0, Math.round(weighted/totalOnsets*1000 - extraTaps*2));
   var squares=measureSquares();
-  document.getElementById('finalDayLine').textContent='Sreadle #'+selectedDay+' · Final accuracy';
+  document.getElementById('finalDayLine').textContent=shortDateFor(selectedDay)+' · Final accuracy';
   document.getElementById('finalAcc').textContent=finalAcc.toFixed(1).replace(/\.0$/,'');
   document.getElementById('finalScore').textContent=finalScore;
   document.getElementById('finalCombo').textContent=bestCombo;
@@ -1584,7 +1588,7 @@ function attemptsLeft(n){ return Math.max(0,2-attemptsUsed(n)); }
 function isLocked(n){ return n>=1 && attemptsUsed(n)>=2; }
 function buildShareText(n,res){
   var line2=fmtAcc(res.acc)+'% · Score '+res.score+'/1000 · Best combo '+res.combo;
-  return 'Sreadle #'+n+'\n'+line2+'\nAttempt '+res.attempt+' of 2\n'+res.squares+'\nhttps://sreadle.fun/?day='+n;
+  return 'Sreadle '+shortDateFor(n)+'\n'+line2+'\nAttempt '+res.attempt+' of 2\n'+res.squares+'\nhttps://sreadle.fun/?day='+n;
 }
 function legacyCopy(txt){
   var ta=document.createElement('textarea'); ta.value=txt; ta.style.position='fixed'; ta.style.opacity='0';
@@ -1626,7 +1630,7 @@ function updateAttemptsUI(){
     sb.textContent='🔒 Locked'+(rec&&rec.bestResult ? ' · Best '+fmtAcc(rec.bestResult.acc)+'% · '+rec.bestResult.score+'/1000' : ' · no finished run');
   } else {
     info.textContent='Attempts left: '+attemptsLeft(selectedDay)+' of 2';
-    sb.disabled=false; sb.textContent='▶ Start Day '+selectedDay+' · Count-in';
+    sb.disabled=false; sb.textContent='▶ Start '+shortDateFor(selectedDay)+' · Count-in';
   }
   if(shb) shb.hidden = !(rec && rec.bestResult);
 }
