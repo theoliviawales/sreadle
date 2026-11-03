@@ -1241,8 +1241,8 @@ function loop(){
   rafId=requestAnimationFrame(loop);
 }
 function startGame(asDemo){
-  if(!asDemo && selectedDay>=1 && isLocked(selectedDay)){ updateAttemptsUI(); document.getElementById('feedback').textContent='This puzzle is locked: both attempts are used. Your best result stands.'; return; }
-  demoMode=!!asDemo;
+  if(asDemo!==true && selectedDay>=1 && isLocked(selectedDay)){ updateAttemptsUI(); document.getElementById('feedback').textContent='This puzzle is locked: both attempts are used. Your best result stands.'; return; }
+  demoMode=(asDemo===true);
   ensureAudio(); startSilentLoop();
   chart=buildChart(dayDef.measures);
   notes=chart.notes; rests=chart.rests; groups=chart.groups; buildOnsets();
@@ -1266,7 +1266,7 @@ metroBtn.addEventListener('click',function(){
   metroBtn.setAttribute('aria-pressed', metroOn?'true':'false');
   var s=document.getElementById('metroState'); s.textContent=metroOn?'ON':'OFF'; s.className=metroOn?'on':'';
 });
-document.getElementById('startBtn').addEventListener('click',startGame);
+document.getElementById('startBtn').addEventListener('click',function(){ startGame(); });
 document.getElementById('againBtn').addEventListener('click',function(){ window.scrollTo({top:0,behavior:'smooth'}); startGame(); });
 document.getElementById('listenBtn').addEventListener('click',function(){ window.scrollTo({top:0,behavior:'smooth'}); startGame(true); });
 document.getElementById('fmListenBtn').addEventListener('click',function(){ closeModal('finishModal'); window.scrollTo({top:0,behavior:'smooth'}); startGame(true); });
