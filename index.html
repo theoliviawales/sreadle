@@ -530,7 +530,55 @@ function makeHelpers(st){
 function buildChart(measureFns){
   var st={notes:[],rests:[],groups:[],mb:0};
   measureFns.forEach(function(fn,idx){ st.mb=idx*4; fn(makeHelpers(st)); });
-  return {notes:st.notes, rests:st.rests, groups:st.groups, measures:measureFns.length, totalBeats:measureFns.length*4};
+  /* Auto-beam: consecutive ungrouped eighth or sixteenth notes of equal
+     length inside one beat share a beam at the top of their stems (this is
+     what ties flammed eighth notes together; they used to fall out of every
+     beamed group and render with separate flags). */
+  var cand=st.notes.filter(function(n){ return !n.grouped && !n.tuplet && (n.dur===0.5||n.dur===0.25); });
+  var run=[];
+  function flushRun(){
+    if(run.length>=2){
+      run.forEach(function(n){ n.grouped=true; });
+      st.groups.push({notes:run.slice(), beam:run[0].dur<=0.3?'double':'single', tuplet:null, stubs:[], measure:run[0].measure});
+    }
+    run=[];
+  }
+  cand.forEach(function(n){
+    var prev=run[run.length-1];
+    if(prev && n.measure===prev.measure && n.dur===prev.dur && Math.floor(n.beat)===Math.floor(prev.beat) && Math.abs(n.beat-(prev.beat+prev.dur))<0.01) run.push(n);
+    else { flushRun(); run=[n]; }
+  });
+  flushRun();
+  /* Flam spacing: a grace note needs about 52 px of clearance before its main
+     note. When the previous note or rest sits closer than that, record a pad
+     to stretch the gap so the grace note never overlaps what came before. */
+  var events=[];
+  st.notes.forEach(function(n){ events.push({beat:n.beat}); });
+  st.rests.forEach(function(r){ events.push({beat:r.beat}); });
+  events.sort(function(a,b){ return a.beat-b.beat; });
+  var flamPads=[];
+  st.notes.forEach(function(n){
+    if(!n.flam) return;
+    var prev=null;
+    for(var i=0;i<events.length;i++){ if(events[i].beat<n.beat-0.001) prev=events[i]; else break; }
+    if(!prev) return;
+    var gap=n.beat-prev.beat, need=52-gap*PX_PER_BEAT;
+    if(need>0) flamPads.push({beat:n.beat, pad:need, ramp:Math.max(gap,0.25)});
+  });
+  return {notes:st.notes, rests:st.rests, groups:st.groups, measures:measureFns.length, totalBeats:measureFns.length*4, flamPads:flamPads};
+}
+/* Horizontal warp from flam pads: extra space opens up smoothly across the
+   gap before a flammed note and closes after it, so notes still cross the
+   playhead exactly on their beat while the grace note gets its room. */
+function flamWarp(beat, pads){
+  var w=0;
+  pads = pads || ((typeof chart!=='undefined' && chart) ? chart.flamPads : null) || [];
+  for(var i=0;i<pads.length;i++){
+    var fp=pads[i];
+    if(beat>=fp.beat) w+=fp.pad;
+    else if(beat>fp.beat-fp.ramp) w+=fp.pad*(beat-(fp.beat-fp.ramp))/fp.ramp;
+  }
+  return w;
 }
 
 /* ---------- the 10 hand-written days ---------- */
@@ -921,23 +969,25 @@ function draw(currentBeat){
   var W=canvas.getBoundingClientRect().width, H=(window.innerWidth<=520?172:190);
   ctx.clearRect(0,0,W,H);
   var staffY=H*0.62, playX=W*0.22;
+  var warpNow=flamWarp(currentBeat);
+  var xFor=function(b){ return playX + (b-currentBeat)*PX_PER_BEAT + flamWarp(b)-warpNow; };
   ctx.strokeStyle='#111'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(0,staffY); ctx.lineTo(W,staffY); ctx.stroke();
   ctx.textAlign='left';
   for(var m=0;m<=chart.measures;m++){
-    var bx=playX + (m*4 - currentBeat)*PX_PER_BEAT;
+    var bx=xFor(m*4);
     if(bx<-20||bx>W+20) continue;
     ctx.strokeStyle='#111'; ctx.lineWidth=(m===chart.measures?3:1.6); ctx.beginPath(); ctx.moveTo(bx,staffY-28); ctx.lineTo(bx,staffY+10); ctx.stroke();
     if(m<chart.measures){ ctx.fillStyle='#777'; ctx.font='700 10px "IBM Plex Mono",monospace'; ctx.fillText(String(m+1),bx+5,staffY-36); }
   }
   rests.forEach(function(r){
-    var x=playX + (r.beat - currentBeat)*PX_PER_BEAT;
+    var x=xFor(r.beat);
     if(x<-30||x>W+30) return;
     var cx=r.dur>=1 ? x + (r.dur*PX_PER_BEAT)/2 - PX_PER_BEAT*0.1 : x+6;
     drawRest(cx,staffY,r.kind);
   });
   var stemTop=staffY-44;
   groups.forEach(function(g){
-    var xs=g.notes.map(function(n){ return playX + (n.beat - currentBeat)*PX_PER_BEAT; });
+    var xs=g.notes.map(function(n){ return xFor(n.beat); });
     if(xs[xs.length-1]<-30||xs[0]>W+30) return;
     ctx.fillStyle='#111';
     var top=stemTop;
@@ -951,7 +1001,7 @@ function draw(currentBeat){
     if(g.tuplet){ ctx.fillStyle='#111'; ctx.font='italic 900 17px Georgia,serif'; ctx.textAlign='center'; ctx.fillText(String(g.tuplet), (xs[0]+xs[xs.length-1])/2+5, top-10); ctx.textAlign='left'; }
   });
   notes.forEach(function(n){
-    var x=playX + (n.beat - currentBeat)*PX_PER_BEAT;
+    var x=xFor(n.beat);
     if(x<-30||x>W+30) return;
     var col = n.state==='hit' ? '#159947' : (n.state==='miss' ? '#d92d20' : '#111');
     ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineWidth=2;
@@ -975,7 +1025,7 @@ function draw(currentBeat){
   });
   ctx.fillStyle='#f5b301'; ctx.fillRect(playX-2,8,4,H-16);
   ctx.beginPath(); ctx.moveTo(playX-8,8); ctx.lineTo(playX+8,8); ctx.lineTo(playX,20); ctx.closePath(); ctx.fill();
-  var x0=playX + (-0.62 - currentBeat)*PX_PER_BEAT;
+  var x0=xFor(-0.62);
   if(x0>-40 && x0<W){ ctx.fillStyle='#111'; ctx.font='900 17px Georgia,serif'; ctx.fillText('4',x0,staffY-13); ctx.fillText('4',x0,staffY+9); }
 }
 
@@ -1187,7 +1237,7 @@ function compileMeasure(elements){
       if(!run.length) return;
       if(run.length===1){ var it=run[0]; h.n(it.rel,it.dur,(it.dot||it.flam)?{dot:it.dot,flam:it.flam}:{}); }
       else{
-        var list=run.map(function(it){ return h.n(it.rel,it.dur, it.dot?{dot:true}:{}); });
+        var list=run.map(function(it){ return h.n(it.rel,it.dur, (it.dot||it.flam)?{dot:it.dot,flam:it.flam}:{}); });
         var allShort=run.every(function(it){ return it.dur<=0.3; });
         var stubs=[];
         run.forEach(function(it,i){
@@ -1214,12 +1264,11 @@ function compileMeasure(elements){
         i+=size; continue;
       }
       if(it.kind==='rest'){ flush(); h.r(it.rel,it.dur, it.dur>=2?'half':it.dur>=1?'quarter':it.dur>=0.5?'eighth':'sixteenth'); i++; continue; }
-      if(it.flam){ flush(); h.n(it.rel,it.dur,{dot:it.dot,flam:true}); i++; continue; }
       if(it.dur<=0.75){
         var sameBeat = run.length===0 || (Math.floor(it.rel)===Math.floor(run[0].rel) && it.rel+it.dur<=Math.floor(it.rel)+1.001);
         if(sameBeat) run.push(it);
         else { flush(); run.push(it); }
-      } else { flush(); h.n(it.rel,it.dur, it.dot?{dot:true}:{}); }
+      } else { flush(); h.n(it.rel,it.dur, (it.dot||it.flam)?{dot:it.dot,flam:it.flam}:{}); }
       i++;
     }
     flush();
@@ -1343,20 +1392,22 @@ function drawEdPreview(){
   var ectx=cvs.getContext('2d'); ectx.setTransform(dpr,0,0,dpr,0,0);
   var W=r.width, startX=42, ppb=(W-60)/4, staffY=86, stemTop=staffY-44;
   var cm=compileMeasure(curEls()); var ch=buildChart([cm.fn]);
-  edHit=cm.items.map(function(it){ return {x:startX+it.rel*ppb, el:it.el, cell:it.cell}; });
+  var warpScale=ppb/PX_PER_BEAT;
+  var xForEd=function(b){ return startX + b*ppb + flamWarp(b, ch.flamPads)*warpScale; };
+  edHit=cm.items.map(function(it){ return {x:xForEd(it.rel), el:it.el, cell:it.cell}; });
   var old=ctx; ctx=ectx;
   ctx.clearRect(0,0,W,132);
   if(sel && curEls()[sel.el]){
     var its=cm.items.filter(function(it){ return it.el===sel.el; });
-    if(its.length){ var x0=startX+its[0].rel*ppb-16, x1=startX+(its[its.length-1].rel+its[its.length-1].dur)*ppb+16; ctx.fillStyle='rgba(245,179,1,.30)'; ctx.fillRect(x0,14,x1-x0,106); }
+    if(its.length){ var x0=xForEd(its[0].rel)-16, x1=xForEd(its[its.length-1].rel+its[its.length-1].dur)+16; ctx.fillStyle='rgba(245,179,1,.30)'; ctx.fillRect(x0,14,x1-x0,106); }
   }
   ctx.strokeStyle='#111'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(6,staffY); ctx.lineTo(W-6,staffY); ctx.stroke();
   ctx.lineWidth=1.6; ctx.beginPath(); ctx.moveTo(startX-16,staffY-28); ctx.lineTo(startX-16,staffY+10); ctx.stroke();
-  ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(startX+4*ppb+14,staffY-28); ctx.lineTo(startX+4*ppb+14,staffY+10); ctx.stroke();
+  ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(xForEd(4)+14,staffY-28); ctx.lineTo(xForEd(4)+14,staffY+10); ctx.stroke();
   ctx.fillStyle='#777'; ctx.font='700 10px "IBM Plex Mono",monospace'; ctx.textAlign='left'; ctx.fillText(String(curMeasure+1), startX-11, staffY-36);
-  ch.rests.forEach(function(rst){ var x=startX+rst.beat*ppb; var cx=rst.dur>=1 ? x+(rst.dur*ppb)/2-ppb*0.1 : x+6; drawRest(cx,staffY,rst.kind); });
+  ch.rests.forEach(function(rst){ var x=xForEd(rst.beat); var cx=rst.dur>=1 ? x+(rst.dur*ppb)/2-ppb*0.1 : x+6; drawRest(cx,staffY,rst.kind); });
   ch.groups.forEach(function(g){
-    var xs=g.notes.map(function(n){ return startX+n.beat*ppb; });
+    var xs=g.notes.map(function(n){ return xForEd(n.beat); });
     ctx.fillStyle='#111'; var top=stemTop;
     ctx.fillRect(xs[0]+9, top, xs[xs.length-1]-xs[0], 5);
     if(g.beam==='double'){ ctx.fillRect(xs[0]+9, top+9, xs[xs.length-1]-xs[0], 5); }
@@ -1368,7 +1419,7 @@ function drawEdPreview(){
     if(g.tuplet){ ctx.font='italic 900 17px Georgia,serif'; ctx.textAlign='center'; ctx.fillText(String(g.tuplet), (xs[0]+xs[xs.length-1])/2+5, top-10); ctx.textAlign='left'; }
   });
   ch.notes.forEach(function(n){
-    var x=startX+n.beat*ppb;
+    var x=xForEd(n.beat);
     ctx.strokeStyle='#111'; ctx.fillStyle='#111'; ctx.lineWidth=2;
     ctx.beginPath(); ctx.moveTo(x+9, staffY-3); ctx.lineTo(x+9, stemTop+(n.grouped?5:0)); ctx.stroke();
     ctx.save(); ctx.translate(x,staffY); ctx.rotate(-0.32); ctx.beginPath(); ctx.ellipse(0,0,9.5,6.8,0,0,Math.PI*2);
