@@ -227,6 +227,18 @@ main{max-width:760px;padding:10px 12px 26px}
 .example .ex-cap{font-size:12px;color:#555;font-weight:600;margin-top:8px;text-align:center}
 .modal .big-btn{width:100%;min-height:52px;border:0;border-radius:12px;background:var(--amber);color:#191200;font-weight:900;font-size:16px;cursor:pointer;margin-top:18px;box-shadow:0 3px 0 var(--amber-dark)}
 .modal .ghost-btn{width:100%;min-height:48px;border:1px solid var(--line);border-radius:12px;background:var(--chip);color:var(--ink);font-weight:800;font-size:15px;cursor:pointer;margin-top:8px}
+.modal.fm{position:relative;text-align:center}
+.fm-x{position:absolute;top:10px;right:12px;width:38px;height:38px;border:0;border-radius:10px;background:transparent;color:var(--muted);font-size:19px;font-weight:900;cursor:pointer}
+.fm-badge{width:58px;height:58px;margin:2px auto 10px;border-radius:15px;background:var(--amber);color:#171200;display:grid;place-items:center;font-size:31px;font-weight:900}
+.modal.fm h2{font-size:27px;margin:0}
+.fm-date{color:var(--muted);font-weight:800;font-size:13.5px;margin-top:3px}
+.fm-acc{font-family:"IBM Plex Mono",monospace;font-weight:900;font-size:52px;line-height:1.05;margin-top:10px}
+.fm-score{font-size:14.5px;font-weight:700;color:var(--muted)}
+.fm-squares{font-size:21px;letter-spacing:2px;margin:10px 0 2px}
+.fm-attempt{font-size:13.5px;font-weight:700;color:var(--muted);margin-top:4px}
+.fm-share{width:100%;min-height:54px;border:0;border-radius:999px;background:#159947;color:#fff;font-weight:900;font-size:18px;cursor:pointer;margin-top:14px}
+.fm-share:active{filter:brightness(1.1)}
+.fm-count{font-size:13px;font-weight:800;color:var(--muted);margin-top:12px}
 .mstats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:16px 0 6px}
 .mstats div{background:var(--chip);border-radius:12px;padding:12px 4px;text-align:center}
 .mstats b{display:block;font-family:"IBM Plex Mono",monospace;font-size:23px}
@@ -473,6 +485,28 @@ body.playing #tapPad{order:9;flex:1 1 auto;min-height:104px;margin-top:auto;disp
     </div>
     <p class="rule" style="color:var(--muted);font-size:13.5px">Sound tip: Sreadle asks your browser to play through silent mode on iPhone. If you still hear nothing, raise the volume or flip the side switch.</p>
     <button class="big-btn" id="helpGotIt" type="button">Got it</button>
+  </div>
+</div>
+
+<div class="modal-wrap" id="finishModal" role="dialog" aria-modal="true" aria-labelledby="fmTitle">
+  <div class="modal fm">
+    <button class="fm-x" id="fmClose" type="button" aria-label="Back to puzzle">✕</button>
+    <div class="fm-badge" aria-hidden="true">♪</div>
+    <h2 id="fmTitle">Run complete!</h2>
+    <div class="fm-date" id="fmDate">11/2</div>
+    <div class="fm-acc"><span id="fmAcc">0</span>%</div>
+    <div class="fm-score">Score <b id="fmScore">0</b> / 1000 · Best combo <b id="fmCombo">0</b>×</div>
+    <div class="fm-squares" id="fmSquares" aria-label="Accuracy by measure"></div>
+    <div class="fm-attempt" id="fmAttempt"></div>
+    <div class="mstats">
+      <div><b id="fmPlayed">0</b><span>Played</span></div>
+      <div><b id="fmStreak">0</b><span>Cur. streak</span></div>
+      <div><b id="fmBestStreak">0</b><span>Best streak</span></div>
+      <div><b id="fmBestAcc">—</b><span>Best acc.</span></div>
+    </div>
+    <button class="fm-share" id="fmShareBtn" type="button">Share</button>
+    <button class="ghost-btn" id="fmAgainBtn" type="button">Play attempt 2</button>
+    <div class="fm-count" id="fmCountdown">Next Sreadle in --:--:--</div>
   </div>
 </div>
 
@@ -1138,6 +1172,20 @@ function finish(){
   document.getElementById('feedback').textContent='Round complete. Copy your result, then tomorrow brings a brand-new rhythm.';
   res.scrollIntoView({behavior:'smooth',block:'nearest'});
   draw(chart.totalBeats+1);
+  if(selectedDay>=1){
+    var cs=computeStats();
+    setTxt('fmDate','Sreadle · '+shortDateFor(selectedDay));
+    setTxt('fmAcc',finalAcc.toFixed(1).replace(/\.0$/,''));
+    setTxt('fmScore',finalScore); setTxt('fmCombo',bestCombo);
+    setTxt('fmSquares',squares);
+    setTxt('fmAttempt',document.getElementById('attemptNote').textContent);
+    setTxt('fmPlayed',cs.played); setTxt('fmStreak',cs.streak); setTxt('fmBestStreak',cs.bestStreak);
+    setTxt('fmBestAcc', cs.bestAcc===null?'—':(Math.round(cs.bestAcc*10)/10)+'%');
+    var agb=document.getElementById('fmAgainBtn');
+    if(attemptsLeft(selectedDay)>0){ agb.hidden=false; agb.textContent='Play attempt '+(attemptNo+1); }
+    else agb.hidden=true;
+    setTimeout(function(){ if(finished && !playing && selectedDay>=1) openModal('finishModal'); },900);
+  }
 }
 function loop(){
   if(!playing) return;
@@ -1752,13 +1800,16 @@ document.getElementById('helpBtn').addEventListener('click',function(){ openModa
 document.getElementById('helpGotIt').addEventListener('click',function(){ closeModal('helpModal'); try{ localStorage.setItem('sreadle-help-seen-v1','1'); }catch(e){} });
 document.getElementById('statsBtn').addEventListener('click',function(){ renderStats(); openModal('statsModal'); });
 document.getElementById('statsClose').addEventListener('click',function(){ closeModal('statsModal'); });
+document.getElementById('fmClose').addEventListener('click',function(){ closeModal('finishModal'); });
+document.getElementById('fmShareBtn').addEventListener('click',function(){ if(lastShareText) shareResult(lastShareText,this); });
+document.getElementById('fmAgainBtn').addEventListener('click',function(){ closeModal('finishModal'); window.scrollTo({top:0,behavior:'smooth'}); startGame(); });
 document.getElementById('archiveBtn').addEventListener('click',function(){
   if(location.hash==='#/creator-72331f3e70bad9'){ location.hash=''; }
   var p=document.getElementById('archivePanel'); if(!p) return;
   p.hidden=!p.hidden;
   if(!p.hidden) p.scrollIntoView({behavior:'smooth',block:'start'});
 });
-['helpModal','statsModal'].forEach(function(id){ var m=document.getElementById(id); if(m) m.addEventListener('click',function(e){ if(e.target===m) m.classList.remove('on'); }); });
+['helpModal','statsModal','finishModal'].forEach(function(id){ var m=document.getElementById(id); if(m) m.addEventListener('click',function(e){ if(e.target===m) m.classList.remove('on'); }); });
 function updateCountdown(){
   var el=document.getElementById('countdown'); if(!el) return;
   try{
@@ -1768,6 +1819,7 @@ function updateCountdown(){
     function p2(x){ return (x<10?'0':'')+x; }
     el.textContent='Next Sreadle in '+p2(Math.floor(s/3600))+':'+p2(Math.floor(s%3600/60))+':'+p2(s%60);
   }catch(e){ el.textContent='Next Sreadle at midnight, Seattle time'; }
+  var fmEl=document.getElementById('fmCountdown'); if(fmEl) fmEl.textContent=el.textContent;
 }
 
 /* ---------- init ---------- */
