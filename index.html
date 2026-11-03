@@ -1138,7 +1138,7 @@ function finish(){
   document.getElementById('measureLabel').textContent='Measure '+chart.measures+' / '+chart.measures+' · Done';
   document.getElementById('progBar').style.width='100%';
   if(wasDemo){
-    document.getElementById('feedback').textContent='That is what 100% accuracy sounds like. Your attempts and your best result are unchanged.';
+    document.getElementById('feedback').textContent='';
     updateAttemptsUI();
     draw(chart.totalBeats+1);
     demoMode=false;
