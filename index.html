@@ -338,7 +338,7 @@ body.playing #tapPad{order:9;flex:1 1 auto;min-height:104px;margin-top:auto;disp
   <button id="quitBtn" type="button" class="mini-btn" hidden style="margin:0 0 10px">■ Quit run</button>
   <button id="tapPad" type="button" aria-label="Tap pad">
     <span class="big">TAP</span>
-    <span class="sub">Tap here · or press any key / spacebar on desktop</span>
+    <span class="sub">Tap here · on a keyboard, use two letter keys, one per hand, and alternate on fast runs</span>
   </button>
   <div class="feedback" id="feedback">Press Start, hear the count-in, then tap on the line.</div>
 
@@ -459,7 +459,7 @@ body.playing #tapPad{order:9;flex:1 1 auto;min-height:104px;margin-top:auto;disp
 <div class="modal-wrap" id="helpModal" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
   <div class="modal">
     <h2 id="helpTitle">How to play</h2>
-    <p class="rule"><b>1.</b> Tap the pad (or press any key) exactly when each note crosses the amber line.</p>
+    <p class="rule"><b>1.</b> Tap the pad exactly when each note crosses the amber line. On a keyboard, any key works: put one finger of each hand on two letter keys (like F and J) and alternate hands on fast runs and tuplets, so a single key's rebound never blocks the next note.</p>
     <p class="rule"><b>2.</b> The metronome counts you in for one measure, then clicks every beat for the whole round. A note with a tiny grace note before it is a flam: two quick taps, grace first, then the beat.</p>
     <p class="rule"><b>3.</b> You get 2 attempts at each day's rhythm. A new puzzle arrives at midnight, Seattle time.</p>
     <div class="example" aria-hidden="true">
@@ -1149,13 +1149,27 @@ document.getElementById('quitBtn').addEventListener('click',function(){ if(playi
 var pad=document.getElementById('tapPad');
 pad.addEventListener('pointerdown',function(e){ e.preventDefault(); handleTap(); });
 pad.addEventListener('touchstart',function(e){ e.preventDefault(); },{passive:false});
+/* Keyboard play: every key is tracked independently, so two letter keys can
+   be played like two drum hands (for example F and J), alternating on fast
+   runs and tuplets. A key that is still held down cannot retrigger, and a
+   same-key bounce within 30 ms is ignored, so one key's rebound never eats
+   or doubles a note. The guard is per key: the other hand is never blocked. */
+var keysDown={}, lastKeyTap={};
 document.addEventListener('keydown',function(e){
   if(e.repeat) return;
   if(e.metaKey||e.ctrlKey||e.altKey) return;
   var t=e.target;
   if(t && (t.tagName==='TEXTAREA' || t.tagName==='INPUT')) return;
+  var k=(e.key||'').toLowerCase();
+  if(keysDown[k]) return;
+  keysDown[k]=true;
+  var now=performance.now();
+  if(lastKeyTap[k] && now-lastKeyTap[k]<30) return;
+  lastKeyTap[k]=now;
   e.preventDefault(); handleTap();
 });
+document.addEventListener('keyup',function(e){ keysDown[(e.key||'').toLowerCase()]=false; });
+window.addEventListener('blur',function(){ keysDown={}; });
 document.addEventListener('touchmove',function(e){ if(playing) e.preventDefault(); },{passive:false});
 
 /* ---------- rhythm element format: compile / decompile ---------- */
