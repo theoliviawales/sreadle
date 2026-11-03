@@ -1000,7 +1000,18 @@ function handleTap(){
   if(!playing||finished) return;
   var b=songBeatNow();
   var best=null,bestDiff=1e9;
-  for(var i=0;i<onsets.length;i++){ var o=onsets[i]; if(o.state!=='pending') continue; var d=b-onsetBeat(o); if(Math.abs(d)<Math.abs(bestDiff)){bestDiff=d;best=o;} }
+  /* Flam grace notes are generous: once a grace tap lands closer to the main
+     note than to the grace target (or a hair after the main note), it counts
+     as the grace hit, judged by its distance to the main note, instead of
+     being stolen by the main onset. Taps nearer the grace target keep the
+     normal matching, so a textbook flam still scores Perfect on both taps. */
+  for(var i=0;i<onsets.length;i++){ var g=onsets[i]; if(!g.grace || g.state!=='pending') continue;
+    var mainMs=(b-g.note.beat)*msPerBeat(), graceMs=(b-onsetBeat(g))*msPerBeat();
+    if(mainMs>=-55 && mainMs<=45 && graceMs<=250){ best=g; bestDiff=mainMs/msPerBeat(); break; }
+  }
+  if(!best){
+    for(var i=0;i<onsets.length;i++){ var o=onsets[i]; if(o.state!=='pending') continue; var d=b-onsetBeat(o); if(Math.abs(d)<Math.abs(bestDiff)){bestDiff=d;best=o;} }
+  }
   var errMs=bestDiff*msPerBeat();
   if(!best || Math.abs(errMs)>140){
     if(b<0) return; /* stray taps during count-in are ignored, but a flam grace note just before beat 1 still counts */
@@ -1094,7 +1105,7 @@ function loop(){
     document.getElementById('countIn').classList.remove('on');
   }
   var winBeats=140/msPerBeat();
-  for(var i=0;i<onsets.length;i++){ var o=onsets[i]; if(o.state==='pending' && b-onsetBeat(o)>winBeats){ o.state='miss'; o.judge='Miss'; runJudged=true; if(o.grace) o.note.graceState='miss'; else o.note.state='miss'; counts.miss++; combo=0; showJudge('MISS','#d92d20'); updateHUD(); } }
+  for(var i=0;i<onsets.length;i++){ var o=onsets[i]; var deadline=o.grace ? o.note.beat : onsetBeat(o); if(o.state==='pending' && b-deadline>winBeats){ o.state='miss'; o.judge='Miss'; runJudged=true; if(o.grace) o.note.graceState='miss'; else o.note.state='miss'; counts.miss++; combo=0; showJudge('MISS','#d92d20'); updateHUD(); } }
   draw(Math.max(b,-COUNTIN));
   var prog=Math.max(0,Math.min(1,b/chart.totalBeats));
   document.getElementById('progBar').style.width=(prog*100)+'%';
