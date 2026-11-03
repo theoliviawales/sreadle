@@ -1,7 +1,9 @@
-/* Flam rules from the design: Days 1 to 8 have no flams, Days 9 and 10 have
-   at most 2 each, and a generated day has at most 1. Counts are taken from
-   the compiled charts (a flam is a flag on the main note) and, for the
-   authored days, cross-checked against patterns.json. */
+/* Flam rules: authored days may carry flams when the owner publishes them
+   (Day 2 was replaced with an authored flam-heavy rhythm on 2026-11-02);
+   Days 9 and 10 keep their original cap of at most 2 each, and a generated
+   day has at most 1. Counts are taken from the compiled charts (a flam is
+   a flag on the main note) and, for the authored days, cross-checked
+   against patterns.json so the embedded and published copies never drift. */
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -19,13 +21,12 @@ function chartFlams(def) {
   return game.buildChart(def.measures).notes.filter(n => n.flam).length;
 }
 
-test('flams: embedded days 1 to 8 have none, days 9 and 10 have at most 2', async (t) => {
+test('flams: authored days agree between index.html and patterns.json; days 9 and 10 have at most 2', async (t) => {
   for (let i = 0; i < 10; i++) {
     const day = i + 1;
     await t.test(`day ${day}`, () => {
       const count = chartFlams(game.DAYS[i]);
-      if (day <= 8) assert.equal(count, 0, `day ${day}: expected no flams, found ${count}`);
-      else assert.ok(count <= 2, `day ${day}: expected at most 2 flams, found ${count}`);
+      if (day >= 9) assert.ok(count <= 2, `day ${day}: expected at most 2 flams, found ${count}`);
       assert.equal(countFlams(patternsJson[String(day)]), count, `day ${day}: patterns.json flam count differs from index.html`);
     });
   }

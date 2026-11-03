@@ -548,16 +548,18 @@ var DAYS=[
     function(h){ h.eighths(0); h.quin(1); h.restLed(2); h.quin(3); },
     function(h){ h.n(0,1.5,{dot:true}); h.n(1.5,.5); h.s16(2); h.q(3); }
   ]},
-{ bpm:60, title:'Gentle on-ramp',
-  blurb:'Day 2 slows down to 60 BPM: quarters and eighths, dotted quarter + eighth figures, a rest right on a downbeat, and one friendly measure of sixteenths at the end.',
-  detail:'<p>Mostly eighth and quarter notes across 6 measures. Watch the quarter rest on the downbeat of measure 3, and save some focus for the sixteenths in the final measure.</p>',
+{ bpm:72, title:'My rhythm',
+  blurb:'An authored rhythm at 72 BPM: sextuplet and triplet cells, dotted figures, sixteenth runs, and two flam-heavy measures in the back half.',
+  detail:'<p>Eight measures at 72 BPM. Sextuplets open the first and fourth measures, measures 5 and 6 are built from flams, and the last measure closes on a sextuplet.</p>',
   measures:[
-    function(h){ h.q(0); h.q(1); h.eighths(2); h.q(3); },
-    function(h){ h.dotQtr(0); h.q(2); h.q(3); },
-    function(h){ h.r(0,1,'quarter'); h.q(1); h.eighths(2); h.q(3); },
-    function(h){ h.eighths(0); h.q(1); h.dotQtr(2); },
-    function(h){ h.half(0); h.q(2); h.q(3); },
-    function(h){ h.s16(0); h.eighths(1); h.q(2); h.q(3); }
+    function(h){ h.sext(0); h.n(1,.5); h.sext(1.5); h.n(2.5,.5); h.trip(3); },
+    function(h){ h.n(0,.5); h.n(.5,.5); h.q(1); h.n(2,1.5,{dot:true}); h.n(3.5,.5); },
+    function(h){ h.n(0,.5); h.n(.5,.5); h.trip(1); h.n(2,.25); h.n(2.25,.25); h.n(2.5,.25); h.n(2.75,.25); h.quin(3); },
+    function(h){ h.sext(0); h.n(1,.25); h.r(1.25,.25,'sixteenth'); h.n(1.5,.25); h.n(1.75,.25); h.n(2,1.5,{dot:true}); h.n(3.5,.25); h.n(3.75,.25); },
+    function(h){ h.n(0,.5,{flam:true}); h.n(.5,.5,{flam:true}); h.n(1,1,{flam:true}); h.n(2,.5,{flam:true}); h.n(2.5,.5,{flam:true}); h.n(3,1,{flam:true}); },
+    function(h){ h.n(0,.5,{flam:true}); h.n(.5,.5,{flam:true}); h.n(1,.25); h.n(1.25,.25); h.n(1.5,.25); h.n(1.75,.25); h.n(2,.5,{flam:true}); h.n(2.5,.5,{flam:true}); h.trip(3); },
+    function(h){ h.n(0,.5); h.n(.5,.5); h.n(1,.75,{dot:true}); h.n(1.75,.25); h.quin(2); h.trip(3); },
+    function(h){ h.n(0,.25); h.r(.25,.25,'sixteenth'); h.n(.5,.25); h.n(.75,.25); h.n(1,1,{flam:true}); h.trip(2); h.sext(3); }
   ]},
 { bpm:66, title:'Sixteenth focus',
   blurb:'Day 3 is sixteenth-note day: full beats of sixteenths, dotted eighth + sixteenth pairs, and the sixteenth + eighth + sixteenth syncopation that loves to pull you early.',
