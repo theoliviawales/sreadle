@@ -920,7 +920,7 @@ function metroSound(accent){ click(accent?1560:1050,0.09,accent?0.28:0.2,'sine')
 function msPerBeat(){ return 60000/(dayDef.bpm*speed); }
 /* ---------- flam onsets: a flammed note is two judged onsets ---------- */
 var onsets=[], totalOnsets=1;
-function graceBeats(){ return 0.11/(msPerBeat()/1000); } /* fixed 110 ms before the main note, not scaled by tempo */
+function graceBeats(){ return 0.07/(msPerBeat()/1000); } /* fixed 70 ms before the main note, a tight flam, not scaled by tempo */
 function onsetBeat(o){ return o.grace ? o.note.beat - graceBeats() : o.note.beat; }
 function buildOnsets(){
   onsets=[];
@@ -1137,6 +1137,13 @@ function finish(){
   document.getElementById('startBtn').disabled=false; document.getElementById('startBtn').textContent='▶ Start '+shortDateFor(selectedDay)+' · Count-in';
   document.getElementById('measureLabel').textContent='Measure '+chart.measures+' / '+chart.measures+' · Done';
   document.getElementById('progBar').style.width='100%';
+  if(wasDemo){
+    document.getElementById('feedback').textContent='That is what 100% accuracy sounds like. Your attempts and your best result are unchanged.';
+    updateAttemptsUI();
+    draw(chart.totalBeats+1);
+    demoMode=false;
+    return;
+  }
   var finalAcc=Math.max(0, ((counts.perfect*100+counts.great*75+counts.good*50)/(totalOnsets*100))*100 - extraTaps*0.4);
   var finalScore=Math.max(0, Math.round(weighted/totalOnsets*1000 - extraTaps*2));
   var squares=measureSquares();
