@@ -346,7 +346,6 @@ body.playing #tapPad{order:9;flex:1 1 auto;min-height:104px;margin-top:auto;disp
   <section class="results" id="results" aria-live="polite">
     <div class="dayline" id="finalDayLine">Sreadle #1 · Final accuracy</div>
     <div class="acc"><span id="finalAcc">0</span>%</div>
-    <div class="grade" id="finalGrade">Grade S</div>
     <div class="score">Score <span id="finalScore">0</span> / 1000 · Best combo <span id="finalCombo">0</span>× · Extra taps <span id="finalExtra">0</span></div>
     <div class="score" id="attemptNote"></div>
     <div class="squares" id="finalSquares" aria-label="Accuracy by measure"></div>
@@ -1046,8 +1045,6 @@ function finish(){
   document.getElementById('cGreat').textContent=counts.great;
   document.getElementById('cGood').textContent=counts.good;
   document.getElementById('cMiss').textContent=counts.miss;
-  var grade = finalAcc>=95?'Grade S · Sightreader':finalAcc>=85?'Grade A · Very steady':finalAcc>=70?'Grade B · Getting there':finalAcc>=55?'Grade C · Keep counting':'Grade D · Keep counting';
-  document.getElementById('finalGrade').textContent=grade;
   var attemptNo=0;
   if(selectedDay>=1){
     var rec=stats.days[selectedDay]||{done:false,best:0,attempts:0,results:[]};
