@@ -1173,7 +1173,7 @@ function finish(){
     document.getElementById('attemptNote').textContent = (attemptNo>=2 ? 'Attempt 2 of 2. That was your last attempt for this puzzle.' : 'Attempt '+attemptNo+' of 2 · '+(2-attemptNo)+' attempt left');
   } else {
     lastShareText='';
-    document.getElementById('attemptNote').textContent= wasDemo ? 'Demo playback · this is what 100% accuracy sounds like. It was not an attempt, and nothing was recorded.' : 'Custom rhythm · unlimited plays, and nothing is recorded against a daily puzzle.';
+    document.getElementById('attemptNote').textContent='Custom rhythm · unlimited plays, and nothing is recorded against a daily puzzle.';
   }
   document.getElementById('shareBtn').style.display = (!wasDemo && selectedDay>=1) ? '' : 'none';
   var ag=document.getElementById('againBtn');
