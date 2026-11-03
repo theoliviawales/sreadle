@@ -326,7 +326,6 @@ body.playing #tapPad{order:9;flex:1 1 auto;min-height:104px;margin-top:auto;disp
   </div>
 
   <section class="staff-card" aria-label="Scrolling rhythm notation">
-    <div class="staff-top"><span>𝄞 &nbsp;Rhythm only · stems up</span><span class="speed-ind" id="speedInd">×1</span></div>
     <canvas id="staff" width="900" height="190"></canvas>
     <div class="judge-pop" id="judgePop">PERFECT</div>
     <div class="countin" id="countIn">4</div>
@@ -1151,7 +1150,6 @@ document.getElementById('mercySlowBtn').addEventListener('click',function(){
   mercyDecided=true; pendingSlowAid=true;
   speed=0.75;
   segBtns.forEach(function(x){ x.setAttribute('aria-pressed', x.getAttribute('data-speed')==='0.75'?'true':'false'); });
-  document.getElementById('speedInd').textContent='×0.75';
   startGame();
 });
 document.getElementById('mercyFullBtn').addEventListener('click',function(){
