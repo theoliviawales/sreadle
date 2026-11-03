@@ -328,6 +328,7 @@ body.playing #tapPad{order:9;flex:1 1 auto;min-height:104px;margin-top:auto;disp
   <div class="attempt-row">
     <span id="attemptsInfo">Attempts left: 2 of 2</span>
     <button id="shareBestBtn" type="button" class="mini-btn" hidden>Share best result</button>
+    <button id="listenBtn" type="button" class="mini-btn" hidden>▶ Listen to a perfect run</button>
   </div>
 
   <div class="hud" aria-live="off">
@@ -506,6 +507,7 @@ body.playing #tapPad{order:9;flex:1 1 auto;min-height:104px;margin-top:auto;disp
     </div>
     <button class="fm-share" id="fmShareBtn" type="button">Share</button>
     <button class="ghost-btn" id="fmAgainBtn" type="button">Play attempt 2</button>
+    <button class="ghost-btn" id="fmListenBtn" type="button" hidden>▶ Listen to a perfect run</button>
     <div class="fm-count" id="fmCountdown">Next Sreadle in --:--:--</div>
   </div>
 </div>
@@ -873,6 +875,7 @@ function renderStats(){
 }
 
 /* ---------- game state ---------- */
+var demoMode=false;
 var todayNum=todayNumber();
 var selectedDay=todayNum;
 var dayDef=getDay(selectedDay);
@@ -1081,6 +1084,7 @@ function showJudge(text,color){
   fb.innerHTML=text==='EXTRA' ? '<span class="extra">Extra tap, no note on the line.</span>' : '<span class="perfect">'+text+'</span>'+(combo>2?' · '+combo+' combo':'');
 }
 function handleTap(){
+  if(demoMode) return;
   ensureAudio(); tapSound();
   var pad=document.getElementById('tapPad'); pad.classList.add('hit'); setTimeout(function(){pad.classList.remove('hit');},90);
   if(!playing||finished) return;
@@ -1125,6 +1129,7 @@ function measureSquares(){
   return squares;
 }
 function finish(){
+  var wasDemo=demoMode;
   playing=false; finished=true; document.body.classList.remove('playing');
   stopSilentLoop();
   document.getElementById('quitBtn').hidden=true;
@@ -1146,7 +1151,7 @@ function finish(){
   document.getElementById('cGood').textContent=counts.good;
   document.getElementById('cMiss').textContent=counts.miss;
   var attemptNo=0;
-  if(selectedDay>=1){
+  if(selectedDay>=1 && !wasDemo){
     var rec=stats.days[selectedDay]||{done:false,best:0,attempts:0,results:[]};
     rec.attempts=(rec.attempts||0)+1; attemptNo=rec.attempts;
     if(!rec.results) rec.results=[];
@@ -1161,9 +1166,9 @@ function finish(){
     document.getElementById('attemptNote').textContent = (attemptNo>=2 ? 'Attempt 2 of 2. That was your last attempt for this puzzle.' : 'Attempt '+attemptNo+' of 2 · '+(2-attemptNo)+' attempt left');
   } else {
     lastShareText='';
-    document.getElementById('attemptNote').textContent='Custom rhythm · unlimited plays, and nothing is recorded against a daily puzzle.';
+    document.getElementById('attemptNote').textContent= wasDemo ? 'Demo playback · this is what 100% accuracy sounds like. It was not an attempt, and nothing was recorded.' : 'Custom rhythm · unlimited plays, and nothing is recorded against a daily puzzle.';
   }
-  document.getElementById('shareBtn').style.display = selectedDay>=1 ? '' : 'none';
+  document.getElementById('shareBtn').style.display = (!wasDemo && selectedDay>=1) ? '' : 'none';
   var ag=document.getElementById('againBtn');
   if(selectedDay>=1 && attemptsLeft(selectedDay)<=0){ ag.disabled=true; ag.textContent='No attempts left for this puzzle'; }
   else { ag.disabled=false; ag.textContent='Play again'; }
@@ -1172,7 +1177,7 @@ function finish(){
   document.getElementById('feedback').textContent='Round complete. Copy your result, then tomorrow brings a brand-new rhythm.';
   res.scrollIntoView({behavior:'smooth',block:'nearest'});
   draw(chart.totalBeats+1);
-  if(selectedDay>=1){
+  if(selectedDay>=1 && !wasDemo){
     var cs=computeStats();
     setTxt('fmDate','Sreadle · '+shortDateFor(selectedDay));
     setTxt('fmAcc',finalAcc.toFixed(1).replace(/\.0$/,''));
@@ -1184,8 +1189,11 @@ function finish(){
     var agb=document.getElementById('fmAgainBtn');
     if(attemptsLeft(selectedDay)>0){ agb.hidden=false; agb.textContent='Play attempt '+(attemptNo+1); }
     else agb.hidden=true;
-    setTimeout(function(){ if(finished && !playing && selectedDay>=1) openModal('finishModal'); },900);
+    var flb=document.getElementById('fmListenBtn');
+    if(flb) flb.hidden = attemptsLeft(selectedDay)>0;
+    setTimeout(function(){ if(finished && !playing && selectedDay>=1 && !demoMode) openModal('finishModal'); },900);
   }
+  demoMode=false;
 }
 function loop(){
   if(!playing) return;
@@ -1204,6 +1212,18 @@ function loop(){
   } else {
     document.getElementById('countIn').classList.remove('on');
   }
+  if(demoMode){
+    for(var di=0;di<onsets.length;di++){ var dn=onsets[di];
+      if(dn.state==='pending' && b>=onsetBeat(dn)){
+        dn.state='hit'; dn.judge='Perfect'; runJudged=true;
+        counts.perfect++; weighted+=1; combo++; if(combo>bestCombo) bestCombo=combo;
+        tapSound();
+        var pd=document.getElementById('tapPad'); pd.classList.add('hit'); setTimeout(function(){ pd.classList.remove('hit'); },80);
+        if(dn.grace){ dn.note.graceState='hit'; } else { dn.note.state='hit'; dn.note.judge=null; showJudge('PERFECT','#159947'); }
+      }
+    }
+    updateHUD();
+  }
   var winBeats=140/msPerBeat();
   for(var i=0;i<onsets.length;i++){ var o=onsets[i]; var deadline=o.grace ? o.note.beat : onsetBeat(o); if(o.state==='pending' && b-deadline>winBeats){ o.state='miss'; o.judge='Miss'; runJudged=true; if(o.grace) o.note.graceState='miss'; else o.note.state='miss'; counts.miss++; combo=0; showJudge('MISS','#d92d20'); updateHUD(); } }
   draw(Math.max(b,-COUNTIN));
@@ -1213,15 +1233,16 @@ function loop(){
   if(b>chart.totalBeats+0.6){ finish(); return; }
   rafId=requestAnimationFrame(loop);
 }
-function startGame(){
-  if(selectedDay>=1 && isLocked(selectedDay)){ updateAttemptsUI(); document.getElementById('feedback').textContent='This puzzle is locked: both attempts are used. Your best result stands.'; return; }
+function startGame(asDemo){
+  if(!asDemo && selectedDay>=1 && isLocked(selectedDay)){ updateAttemptsUI(); document.getElementById('feedback').textContent='This puzzle is locked: both attempts are used. Your best result stands.'; return; }
+  demoMode=!!asDemo;
   ensureAudio(); startSilentLoop();
   chart=buildChart(dayDef.measures);
   notes=chart.notes; rests=chart.rests; groups=chart.groups; buildOnsets();
   counts={perfect:0,great:0,good:0,miss:0}; combo=0; bestCombo=0; extraTaps=0; weighted=0; lastCountBeat=-99; lastMetroBeat=-1;
   document.getElementById('results').classList.remove('on');
   updateHUD();
-  document.getElementById('feedback').textContent='Count-in: 4 clicks, then tap on the yellow line. The metronome stays with you all the way.';
+  document.getElementById('feedback').textContent= demoMode ? 'Listening to a perfect run: every note played exactly on time. Just listen, no tapping needed, and it does not use an attempt.' : 'Count-in: 4 clicks, then tap on the yellow line. The metronome stays with you all the way.';
   playing=true; finished=false; runJudged=false; startPerf=performance.now();
   document.body.classList.add('playing');
   document.getElementById('quitBtn').hidden=false;
@@ -1240,6 +1261,8 @@ metroBtn.addEventListener('click',function(){
 });
 document.getElementById('startBtn').addEventListener('click',startGame);
 document.getElementById('againBtn').addEventListener('click',function(){ window.scrollTo({top:0,behavior:'smooth'}); startGame(); });
+document.getElementById('listenBtn').addEventListener('click',function(){ window.scrollTo({top:0,behavior:'smooth'}); startGame(true); });
+document.getElementById('fmListenBtn').addEventListener('click',function(){ closeModal('finishModal'); window.scrollTo({top:0,behavior:'smooth'}); startGame(true); });
 document.getElementById('shareBtn').addEventListener('click',function(){ if(lastShareText) shareResult(lastShareText,this); });
 document.getElementById('shareBestBtn').addEventListener('click',function(){
   var rec=stats.days[selectedDay];
@@ -1732,6 +1755,7 @@ function updateAttemptsUI(){
   var info=document.getElementById('attemptsInfo');
   var sb=document.getElementById('startBtn');
   var shb=document.getElementById('shareBestBtn');
+  var lb=document.getElementById('listenBtn');
   var tt=document.getElementById('todayAttempts');
   if(tt){
     var trec=stats.days[todayNum];
@@ -1746,6 +1770,7 @@ function updateAttemptsUI(){
     info.textContent='Custom rhythm · unlimited plays';
     sb.disabled=false; sb.textContent='▶ Start · Count-in';
     if(shb) shb.hidden=true;
+    if(lb) lb.hidden=false;
     return;
   }
   var rec=stats.days[selectedDay];
@@ -1758,16 +1783,18 @@ function updateAttemptsUI(){
     sb.disabled=false; sb.textContent='▶ Start '+shortDateFor(selectedDay)+' · Count-in';
   }
   if(shb) shb.hidden = !(rec && rec.bestResult);
+  if(lb) lb.hidden = !isLocked(selectedDay);
 }
 function quitRun(){
   if(!playing) return;
+  var wasDemoQuit=demoMode; demoMode=false;
   playing=false; finished=false;
   if(rafId) cancelAnimationFrame(rafId);
   document.body.classList.remove('playing');
   document.getElementById('countIn').classList.remove('on');
   document.getElementById('quitBtn').hidden=true;
   stopSilentLoop();
-  if(selectedDay>=1 && runJudged){
+  if(selectedDay>=1 && runJudged && !wasDemoQuit){
     var jd=counts.perfect+counts.great+counts.good+counts.miss;
     var abAcc= jd? ((counts.perfect*100+counts.great*75+counts.good*50)/(jd*100))*100 : 0;
     var abAttempt=attemptsUsed(selectedDay)+1;
