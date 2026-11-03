@@ -1724,7 +1724,7 @@ function legacyCopy(txt){
 function shareResult(text,btn){
   if(selectedDay>=1){ var srec=stats.days[selectedDay]; sendStatBeacon('share', selectedDay, srec&&srec.attempts?srec.attempts:1, srec&&srec.bestResult?srec.bestResult.acc:0); }
   function copied(){ if(btn){ var t=btn.getAttribute('data-label')||btn.textContent; btn.setAttribute('data-label',t); btn.textContent='Copied ✓'; setTimeout(function(){ btn.textContent=t; },1800); } }
-  if(navigator.share){ navigator.share({title:'Sreadle', text:text}).catch(function(){}); return; }
+  if(navigator.share){ navigator.share({text:text}).catch(function(){}); return; }
   if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(text).then(copied,function(){ legacyCopy(text); copied(); }); }
   else { legacyCopy(text); copied(); }
 }
