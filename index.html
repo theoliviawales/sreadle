@@ -343,15 +343,6 @@ body.playing #tapPad{order:9;flex:1 1 auto;min-height:104px;margin-top:auto;disp
   </button>
   <div class="feedback" id="feedback">Press Start, hear the count-in, then tap on the line.</div>
 
-  <div id="mercyBanner" role="group" aria-label="Attempt 2 aid">
-    <div class="mb-t">Attempt 2: one free aid, your choice</div>
-    <div class="mb-d">This is your final attempt at this puzzle. Take it once through at a slower tempo, or play it at full speed. Either way it counts as attempt 2.</div>
-    <div class="mb-btns">
-      <button type="button" class="slow" id="mercySlowBtn">Play it slower (0.75×) for attempt 2</button>
-      <button type="button" id="mercyFullBtn">No aid, full speed</button>
-    </div>
-  </div>
-
   <section class="results" id="results" aria-live="polite">
     <div class="dayline" id="finalDayLine">Sreadle #1 · Final accuracy</div>
     <div class="acc"><span id="finalAcc">0</span>%</div>
@@ -860,8 +851,6 @@ function loadDay(n){
   notes=chart.notes; rests=chart.rests; groups=chart.groups; buildOnsets();
   counts={perfect:0,great:0,good:0,miss:0}; combo=0; bestCombo=0; extraTaps=0; weighted=0;
   finished=false;
-  mercyDecided=false; pendingSlowAid=false; runSlowAid=false;
-  var mbEl=document.getElementById('mercyBanner'); if(mbEl) mbEl.classList.remove('on');
   document.getElementById('results').classList.remove('on');
   document.getElementById('startBtn').textContent='▶ Start Day '+n+' · Count-in';
   document.getElementById('measureLabel').textContent='Measure – / '+chart.measures;
@@ -1057,14 +1046,14 @@ function finish(){
   document.getElementById('cGreat').textContent=counts.great;
   document.getElementById('cGood').textContent=counts.good;
   document.getElementById('cMiss').textContent=counts.miss;
-  var grade = finalAcc>=95?'Grade S · Sightreader':finalAcc>=85?'Grade A · Very steady':finalAcc>=70?'Grade B · Getting there':finalAcc>=55?'Grade C · Keep counting':'Grade D · Slow it to 0.75× and retry';
+  var grade = finalAcc>=95?'Grade S · Sightreader':finalAcc>=85?'Grade A · Very steady':finalAcc>=70?'Grade B · Getting there':finalAcc>=55?'Grade C · Keep counting':'Grade D · Keep counting';
   document.getElementById('finalGrade').textContent=grade;
   var attemptNo=0;
   if(selectedDay>=1){
     var rec=stats.days[selectedDay]||{done:false,best:0,attempts:0,results:[]};
     rec.attempts=(rec.attempts||0)+1; attemptNo=rec.attempts;
     if(!rec.results) rec.results=[];
-    var thisResult={acc:finalAcc, score:finalScore, combo:bestCombo, squares:squares, attempt:attemptNo, slowAid:!!runSlowAid};
+    var thisResult={acc:finalAcc, score:finalScore, combo:bestCombo, squares:squares, attempt:attemptNo};
     rec.results.push(thisResult);
     rec.done=true;
     if(!rec.bestResult || finalScore>rec.bestResult.score){ rec.bestResult=thisResult; rec.best=finalScore; }
@@ -1072,7 +1061,7 @@ function finish(){
     saveStats(); renderStats(); renderArchive();
     lastShareText=buildShareText(selectedDay,thisResult);
     sendStatBeacon('complete', selectedDay, attemptNo, finalAcc);
-    document.getElementById('attemptNote').textContent = (attemptNo>=2 ? 'Attempt 2 of 2. That was your last attempt for this puzzle.' : 'Attempt '+attemptNo+' of 2 · '+(2-attemptNo)+' attempt left') + (runSlowAid ? ' · Played at 0.75× with the attempt-2 aid.' : '');
+    document.getElementById('attemptNote').textContent = (attemptNo>=2 ? 'Attempt 2 of 2. That was your last attempt for this puzzle.' : 'Attempt '+attemptNo+' of 2 · '+(2-attemptNo)+' attempt left');
   } else {
     lastShareText='';
     document.getElementById('attemptNote').textContent='Custom rhythm · unlimited plays, and nothing is recorded against a daily puzzle.';
@@ -1115,14 +1104,6 @@ function loop(){
 }
 function startGame(){
   if(selectedDay>=1 && isLocked(selectedDay)){ updateAttemptsUI(); document.getElementById('feedback').textContent='This puzzle is locked: both attempts are used. Your best result stands.'; return; }
-  var mb=document.getElementById('mercyBanner');
-  if(selectedDay>=1 && attemptsUsed(selectedDay)===1 && !mercyDecided){
-    if(mb){ mb.classList.add('on'); mb.scrollIntoView({behavior:'smooth',block:'center'}); }
-    document.getElementById('feedback').textContent='Attempt 2: choose your free aid, or take it at full speed.';
-    return;
-  }
-  if(mb) mb.classList.remove('on');
-  runSlowAid=pendingSlowAid; pendingSlowAid=false;
   ensureAudio(); startSilentLoop();
   chart=buildChart(dayDef.measures);
   notes=chart.notes; rests=chart.rests; groups=chart.groups; buildOnsets();
@@ -1145,16 +1126,6 @@ metroBtn.addEventListener('click',function(){
   metroOn=!metroOn;
   metroBtn.setAttribute('aria-pressed', metroOn?'true':'false');
   var s=document.getElementById('metroState'); s.textContent=metroOn?'ON':'OFF'; s.className=metroOn?'on':'';
-});
-document.getElementById('mercySlowBtn').addEventListener('click',function(){
-  mercyDecided=true; pendingSlowAid=true;
-  speed=0.75;
-  segBtns.forEach(function(x){ x.setAttribute('aria-pressed', x.getAttribute('data-speed')==='0.75'?'true':'false'); });
-  startGame();
-});
-document.getElementById('mercyFullBtn').addEventListener('click',function(){
-  mercyDecided=true; pendingSlowAid=false;
-  startGame();
 });
 document.getElementById('startBtn').addEventListener('click',startGame);
 document.getElementById('againBtn').addEventListener('click',function(){ window.scrollTo({top:0,behavior:'smooth'}); startGame(); });
@@ -1610,14 +1581,12 @@ function sendStatBeacon(eventName, day, attemptNo, acc){
 
 /* ---------- attempts, sharing, deep links ---------- */
 var runJudged=false;
-var mercyDecided=false, pendingSlowAid=false, runSlowAid=false;
 function fmtAcc(x){ return (Math.round(x*10)/10).toFixed(1).replace(/\.0$/,''); }
 function attemptsUsed(n){ var r=stats.days[n]; return r&&r.attempts?r.attempts:0; }
 function attemptsLeft(n){ return Math.max(0,2-attemptsUsed(n)); }
 function isLocked(n){ return n>=1 && attemptsUsed(n)>=2; }
 function buildShareText(n,res){
   var line2=fmtAcc(res.acc)+'% · Score '+res.score+'/1000 · Best combo '+res.combo;
-  if(res.slowAid) line2+=' at 0.75x';
   return 'Sreadle #'+n+'\n'+line2+'\nAttempt '+res.attempt+' of 2\n'+res.squares+'\nhttps://sreadle.fun/?day='+n;
 }
 function legacyCopy(txt){
