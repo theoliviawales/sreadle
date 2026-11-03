@@ -920,7 +920,7 @@ function metroSound(accent){ click(accent?1560:1050,0.09,accent?0.28:0.2,'sine')
 function msPerBeat(){ return 60000/(dayDef.bpm*speed); }
 /* ---------- flam onsets: a flammed note is two judged onsets ---------- */
 var onsets=[], totalOnsets=1;
-function graceBeats(){ return 0.07/(msPerBeat()/1000); } /* fixed 70 ms before the main note, a tight flam, not scaled by tempo */
+function graceBeats(){ return 0.055/(msPerBeat()/1000); } /* fixed 55 ms before the main note, a tight flam, not scaled by tempo */
 function onsetBeat(o){ return o.grace ? o.note.beat - graceBeats() : o.note.beat; }
 function buildOnsets(){
   onsets=[];
