@@ -659,16 +659,18 @@ var DAYS=[
     function(h){ h.g([h.n(0,0.75,{dot:true}),h.n(0.75,0.25)],'single'); h.g([h.n(1,0.75,{dot:true}),h.n(1.75,0.25)],'single'); h.g([h.n(2,0.75,{dot:true}),h.n(2.75,0.25)],'single'); h.trip(3); },
     function(h){ h.g([h.n(0,0.125),h.n(0.125,0.125),h.n(0.25,0.125),h.n(0.375,0.125),h.n(0.5,0.125),h.n(0.625,0.125),h.n(0.75,0.125),h.n(0.875,0.125)],'triple'); h.g([h.n(1,0.5),h.n(1.5,0.125),h.n(1.625,0.125),h.n(1.75,0.125),h.n(1.875,0.125)],'single'); h.g([h.n(2,0.125),h.n(2.125,0.125),h.n(2.25,0.125),h.n(2.375,0.125),h.n(2.5,0.5)],'single'); h.sext(3); }
   ]},
-{ bpm:63, title:'Triplet day',
-  blurb:'Day 4 belongs to triplets: eighth-note triplets (one with a rest in the middle), quarter-note triplets stretching across two beats, and triplet figures rubbing against straight eighths.',
-  detail:'<p>Six measures of threes against fours. The quarter-note triplets in measures 3 and 6 each span two full beats, so count the span, not the notes. In measure 2 the first triplet begs off its middle note to a rest.</p>',
+{ bpm:80, title:'1105',
+  blurb:'An authored rhythm at 80 BPM: dotted-quarter flams across the first two measures, then sixteenth and thirty-second runs, quintuplets, sextuplets, and offbeat triplets through the back half.',
+  detail:'<p>Eight measures at 80 BPM, 103 notes with 2 flams on the dotted quarters in measures 1 and 2. Measure 3 mixes sixteenths and thirty-seconds into a sextuplet, measures 4 and 7 are built on quintuplets, and measure 8 interleaves triplets with single sixteenths.</p>',
   measures:[
-    function(h){ h.trip(0); h.trip(1); h.q(2); h.q(3); },
-    function(h){ h.g([h.n(0,1/3),h.n(2/3,1/3)],'single',3); h.r(1/3,.34,'eighth'); h.trip(1); h.q(2); h.q(3); },
-    function(h){ h.qtrTrip(0); h.eighths(2); h.q(3); },
-    function(h){ h.eighths(0); h.eighths(1); h.trip(2); h.q(3); },
-    function(h){ h.trip(0); h.s16(1); h.trip(2); h.q(3); },
-    function(h){ h.qtrTrip(0); h.trip(2); h.q(3); }
+    function(h){ h.g([h.n(0,0.5),h.n(0.5,0.5)],'single'); h.n(1,1.5,{dot:true}); h.n(2.5,1.5,{dot:true,flam:true}); },
+    function(h){ h.n(0,1.5,{dot:true,flam:true}); h.n(1.5,0.5); h.g([h.n(2,0.5),h.n(2.5,0.5)],'single'); h.g([h.n(3,0.25),h.n(3.25,0.25),h.n(3.5,0.25),h.n(3.75,0.25)],'double',null,[{t:'span',a:0,b:1},{t:'span',a:1,b:2},{t:'span',a:2,b:3}]); },
+    function(h){ h.g([h.n(0,0.5),h.n(0.5,0.25),h.n(0.75,0.25)],'single',null,[{t:'span',a:1,b:2}]); h.g([h.n(1,0.5),h.n(1.5,0.25),h.n(1.75,0.25)],'single',null,[{t:'span',a:1,b:2}]); h.g([h.n(2,0.25),h.n(2.25,0.25),h.n(2.5,0.125),h.n(2.625,0.125),h.n(2.75,0.25)],'double',null,[{t:'span',a:0,b:1},{t:'span',a:1,b:2},{t:'span',a:2,b:3},{t:'span3',a:2,b:3},{t:'span',a:3,b:4}]); h.sext(3); },
+    function(h){ h.quin(0); h.g([h.n(1,0.5),h.n(1.5,0.5)],'single'); h.quin(2); h.sext(3); },
+    function(h){ h.n(0,0.5); h.trip(0.5); h.n(1.5,0.5); h.n(2,0.5); h.trip(2.5); h.n(3.5,0.5); },
+    function(h){ h.sext(0); h.n(1,0.5); h.sext(1.5); h.n(2.5,0.5); h.trip(3); },
+    function(h){ h.quin(0); h.g([h.n(1,0.5),h.n(1.5,0.5)],'single'); h.quin(2); h.g([h.n(3,0.25),h.n(3.25,0.25),h.n(3.5,0.25),h.n(3.75,0.25)],'double',null,[{t:'span',a:0,b:1},{t:'span',a:1,b:2},{t:'span',a:2,b:3}]); },
+    function(h){ h.n(0,0.25); h.trip(0.25); h.n(1.25,0.25); h.trip(1.5); h.n(2.5,0.25); h.trip(2.75); h.n(3.75,0.25); }
   ]},
 { bpm:69, title:'Offbeat rests',
   blurb:'Day 5 mixes sixteenths and eighth-note triplets at 69 BPM, with rests landing on offbeats so the silence itself feels syncopated.',
