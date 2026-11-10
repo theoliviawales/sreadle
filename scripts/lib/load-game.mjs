@@ -70,6 +70,7 @@ const EXPORT_HOOK = `
   defFromElements: defFromElements,
   chartToElements: chartToElements,
   sanitizeRhythm: sanitizeRhythm,
+  flagCount: flagCount,
   mulberry32: mulberry32
 };
 })();`;

@@ -1,10 +1,12 @@
 /* Flam rules: authored days may carry flams when the owner publishes them
    (Day 2 was replaced with an authored flam-heavy rhythm on 2026-11-02,
    and Day 9 with the owner's '1110' on 2026-11-10);
-   Day 10 keeps its original cap of at most 2, and a generated
-   day has at most 1. Counts are taken from the compiled charts (a flam is
-   a flag on the main note) and, for the authored days, cross-checked
-   against patterns.json so the embedded and published copies never drift. */
+   Day 10 was replaced with the owner's '1111' on 2026-11-10, which carries
+   exactly 2 flams, so its original cap of at most 2 still applies, and a
+   generated day has at most 1. Counts are taken from the compiled charts
+   (a flam is a flag on the main note) and, for the authored days,
+   cross-checked against patterns.json so the embedded and published
+   copies never drift. */
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
