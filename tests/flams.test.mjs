@@ -1,6 +1,7 @@
 /* Flam rules: authored days may carry flams when the owner publishes them
-   (Day 2 was replaced with an authored flam-heavy rhythm on 2026-11-02);
-   Days 9 and 10 keep their original cap of at most 2 each, and a generated
+   (Day 2 was replaced with an authored flam-heavy rhythm on 2026-11-02,
+   and Day 9 with the owner's '1110' on 2026-11-10);
+   Day 10 keeps its original cap of at most 2, and a generated
    day has at most 1. Counts are taken from the compiled charts (a flam is
    a flag on the main note) and, for the authored days, cross-checked
    against patterns.json so the embedded and published copies never drift. */
@@ -21,12 +22,12 @@ function chartFlams(def) {
   return game.buildChart(def.measures).notes.filter(n => n.flam).length;
 }
 
-test('flams: authored days agree between index.html and patterns.json; days 9 and 10 have at most 2', async (t) => {
+test('flams: authored days agree between index.html and patterns.json; day 10 has at most 2', async (t) => {
   for (let i = 0; i < 10; i++) {
     const day = i + 1;
     await t.test(`day ${day}`, () => {
       const count = chartFlams(game.DAYS[i]);
-      if (day >= 9) assert.ok(count <= 2, `day ${day}: expected at most 2 flams, found ${count}`);
+      if (day === 10) assert.ok(count <= 2, `day ${day}: expected at most 2 flams, found ${count}`);
       assert.equal(countFlams(patternsJson[String(day)]), count, `day ${day}: patterns.json flam count differs from index.html`);
     });
   }
