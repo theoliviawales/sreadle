@@ -1,6 +1,7 @@
 /* Flam rules: authored days may carry flams when the owner publishes them
    (Day 2 was replaced with an authored flam-heavy rhythm on 2026-11-02,
-   and Day 9 with the owner's '1110' on 2026-11-10);
+   Day 9 with the owner's '1110' on 2026-11-10, and Day 11 with the owner's
+   '1112' on 2026-11-11, which carries 7 flams);
    Day 10 was replaced with the owner's '1111' on 2026-11-10, which carries
    exactly 2 flams, so its original cap of at most 2 still applies, and a
    generated day has at most 1. Counts are taken from the compiled charts
@@ -25,7 +26,7 @@ function chartFlams(def) {
 }
 
 test('flams: authored days agree between index.html and patterns.json; day 10 has at most 2', async (t) => {
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 11; i++) {
     const day = i + 1;
     await t.test(`day ${day}`, () => {
       const count = chartFlams(game.DAYS[i]);
@@ -35,8 +36,8 @@ test('flams: authored days agree between index.html and patterns.json; day 10 ha
   }
 });
 
-test('flams: generated days have at most 1 (sampled days 11 to 80)', async (t) => {
-  for (let n = 11; n <= 80; n++) {
+test('flams: generated days have at most 1 (sampled days 12 to 80)', async (t) => {
+  for (let n = 12; n <= 80; n++) {
     await t.test(`day ${n}`, () => {
       const count = chartFlams(game.generateDay(n));
       assert.ok(count <= 1, `generated day ${n}: expected at most 1 flam, found ${count}`);

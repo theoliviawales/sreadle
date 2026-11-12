@@ -618,7 +618,7 @@ function flamWarp(beat, pads){
   return w;
 }
 
-/* ---------- the 10 hand-written days ---------- */
+/* ---------- the 11 hand-written days ---------- */
 var DAYS=[
 { bpm:67, title:'Level 8, from the reel',
   blurb:'Day 1 is the original Level 8 exercise from the reel: the first two measures are the reel\u2019s own sheet music, quintuplet, sextuplet, septuplet and all. Measures 3 to 8 keep the same traps coming.',
@@ -745,10 +745,22 @@ var DAYS=[
     function(h){ h.g([h.n(0,0.2),h.n(0.2,0.2),h.n(0.4,0.2),h.n(0.6,0.2),h.n(0.8,0.2)],'double',5); h.n(1,0.75,{dot:true}); h.n(1.75,0.75,{dot:true}); h.n(2.5,0.75,{dot:true}); h.n(3.25,0.75,{dot:true}); },
     function(h){ h.g([h.n(0,0.25),h.n(0.25,0.25),h.n(0.5,0.25),h.n(0.75,0.25)],'double',null,[{t:'span',a:0,b:1},{t:'span',a:1,b:2},{t:'span',a:2,b:3}]); h.g([h.n(1,0.5),h.n(1.5,0.25),h.n(1.75,0.25)],'single',null,[{t:'span',a:1,b:2}]); h.g([h.n(2,0.25),h.n(2.25,0.25),h.n(2.5,0.5)],'single',null,[{t:'span',a:0,b:1}]); h.g([h.n(3,0.5),h.n(3.5,0.25),h.n(3.75,0.25)],'single',null,[{t:'span',a:1,b:2}]); },
     function(h){ h.n(0,3,{dot:true}); h.r(3,0.75,'eighth',true); h.n(3.75,0.25); }
-  ]}
+  ]},
+{ bpm:110, title:'1112',
+  blurb:'An authored rhythm at 110 BPM: a flam-heavy opening measure with five flams, sixteenth and thirty-second runs through measures 2 to 4, a rest-led measure 5 with two more flams, a triplet and a quintuplet in measure 6, and a dotted half note to close.',
+  detail:'<p>Seven measures at 110 BPM, 69 notes with 7 flams. Measure 1 carries five flams, measures 2 and 3 run sixteenths and thirty-seconds, measure 4 answers each sixteenth group with a rest and closes on two dotted eighths, measure 5 opens with a beat and a half of rest before its two flams, measure 6 fits a triplet and a quintuplet, and measure 7 closes on a dotted half note, then a quarter rest to breathe out on.</p>',
+  measures: [
+    [{t:'n',d:0.25,flam:true},{t:'n',d:0.25},{t:'n',d:0.5},{t:'n',d:0.5,flam:true},{t:'n',d:0.25,flam:true},{t:'n',d:0.25},{t:'n',d:0.5},{t:'n',d:0.5,flam:true},{t:'n',d:0.25,flam:true},{t:'n',d:0.25},{t:'n',d:0.5}],
+    [{t:'n',d:0.25},{t:'n',d:0.125},{t:'n',d:0.125},{t:'n',d:0.25},{t:'n',d:0.25},{t:'n',d:0.25},{t:'n',d:0.125},{t:'n',d:0.125},{t:'n',d:0.25},{t:'n',d:0.25},{t:'n',d:0.25},{t:'n',d:0.25},{t:'n',d:0.25},{t:'n',d:0.25},{t:'n',d:0.25},{t:'n',d:0.25},{t:'n',d:0.5}],
+    [{t:'n',d:0.25},{t:'n',d:0.125},{t:'n',d:0.125},{t:'n',d:0.5},{t:'n',d:0.25},{t:'n',d:0.125},{t:'n',d:0.125},{t:'n',d:0.5},{t:'n',d:0.25},{t:'n',d:0.5,dot:true},{t:'n',d:0.5},{t:'n',d:0.5}],
+    [{t:'n',d:0.25},{t:'n',d:0.125},{t:'n',d:0.125},{t:'r',d:0.5},{t:'n',d:0.25},{t:'n',d:0.125},{t:'n',d:0.125},{t:'r',d:0.5},{t:'n',d:0.5,dot:true},{t:'n',d:0.5,dot:true},{t:'n',d:0.5}],
+    [{t:'r',d:1},{t:'r',d:0.5},{t:'n',d:0.5},{t:'n',d:0.25,flam:true},{t:'n',d:0.25},{t:'n',d:0.5},{t:'n',d:1,flam:true}],
+    [{t:'n',d:0.25},{t:'n',d:0.25},{t:'n',d:0.5},{t:'t',n:3,cells:[1,1,1]},{t:'n',d:0.5},{t:'n',d:0.25},{t:'n',d:0.25},{t:'t',n:5,cells:[1,1,1,1,1]}],
+    [{t:'n',d:2,dot:true},{t:'r',d:1}]
+  ].map(function(els){ return compileMeasure(els).fn; }) }
 ];
 
-/* ---------- deterministic generation for Day 11+ ---------- */
+/* ---------- deterministic generation for Day 12+ ---------- */
 function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; var t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
 var CELLS1=[
   {w:3,   f:function(h,r){ h.q(r); }},
@@ -823,7 +835,7 @@ function getDay(n){
   if(remotePatterns[n]) return defFromElements(remotePatterns[n]);
   if(AUTHORED_RHYTHMS[n]) return defFromElements(AUTHORED_RHYTHMS[n]);
   var ov=findOverride(n); if(ov) return defFromElements(ov);
-  return n<=10 ? DAYS[n-1] : generateDay(n);
+  return n<=DAYS.length ? DAYS[n-1] : generateDay(n);
 }
 
 /* ---------- dates & puzzle number ---------- */

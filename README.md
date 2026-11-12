@@ -11,9 +11,9 @@ percentage, and a streak to keep alive.
 ## How it works
 
 - 4/4, one puzzle per day, rolling over at midnight America/Los_Angeles.
-- Day 1 was November 2, 2026. Days 1 to 10 are hand-written rhythms (Day 1 is
+- Day 1 was November 2, 2026. Days 1 to 11 are hand-written rhythms (Day 1 is
   the Level 8 exercise with quintuplet, sextuplet, and septuplet groups);
-  Day 11 onward is generated in the browser by a seeded generator keyed to
+  Day 12 onward is generated in the browser by a seeded generator keyed to
   the puzzle number, so the daily rhythm is identical for every player with
   no server.
 - The metronome clicks on every beat for the whole round.
@@ -41,7 +41,7 @@ how a rhythm becomes official for all players (see `DEPLOYMENT.md`).
 ## Files
 
 - `index.html`: the entire game, self-contained (no build step).
-- `patterns/day-001.json` to `day-010.json`: the authored rhythms as data
+- `patterns/day-001.json` to `day-011.json`: the authored rhythms as data
   files; `patterns.json` is built from them by `scripts/build-patterns.mjs`.
   Publish a new day with `node scripts/publish-pattern.mjs export.json N`.
 - `tests/`: the automated test suite, run with `npm test` (Node only, no

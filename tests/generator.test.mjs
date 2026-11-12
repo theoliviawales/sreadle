@@ -1,4 +1,4 @@
-/* The Day 11+ generator must be deterministic: the same puzzle number yields
+/* The Day 12+ generator must be deterministic: the same puzzle number yields
    the identical rhythm on every run, in every browser. We load the whole game
    twice in two fresh vm contexts (two "runs") and compare the serialized
    rhythms for a sample of days, plus a same-context repeat check. */
@@ -25,7 +25,7 @@ function serialize(game, n) {
   });
 }
 
-for (const n of [11, 50, 365]) {
+for (const n of [12, 50, 365]) {
   test(`generator determinism: day ${n} identical across two fresh runs`, () => {
     const runA = loadGame(indexPath);
     const runB = loadGame(indexPath);
@@ -35,7 +35,7 @@ for (const n of [11, 50, 365]) {
 
 test('generator determinism: repeated calls in one run agree, and measures sum to 4', () => {
   const game = loadGame(indexPath);
-  for (const n of [11, 12, 25, 50, 100, 365]) {
+  for (const n of [12, 25, 50, 100, 365]) {
     assert.equal(serialize(game, n), serialize(game, n), `day ${n}: repeated generation differs`);
     const els = game.chartToElements(game.generateDay(n));
     els.forEach((measure, mi) => {
@@ -45,9 +45,9 @@ test('generator determinism: repeated calls in one run agree, and measures sum t
   }
 });
 
-test('getDay routes days 1 to 10 to the authored table and 11+ to the generator', () => {
+test('getDay routes days 1 to 11 to the authored table and 12+ to the generator', () => {
   const game = loadGame(indexPath);
   assert.equal(game.getDay(1).title, game.DAYS[0].title);
-  assert.equal(game.getDay(10).title, game.DAYS[9].title);
-  assert.equal(game.getDay(11).bpm, game.generateDay(11).bpm);
+  assert.equal(game.getDay(11).title, game.DAYS[10].title);
+  assert.equal(game.getDay(12).bpm, game.generateDay(12).bpm);
 });

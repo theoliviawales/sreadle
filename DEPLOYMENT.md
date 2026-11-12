@@ -152,10 +152,10 @@ npm test
 
 The suite uses only the Node test runner (no dependencies to install) and
 checks the real shipped files: every authored measure sums to exactly 4
-beats with no gaps in the compiled chart, the Day 11+ generator is
-deterministic across fresh runs (sampled at days 11, 50, and 365), the flam
-rules hold (none in Days 1 to 8, at most 2 in Days 9 and 10, at most 1 in
-generated days), and every pattern file round-trips through the validator
+beats with no gaps in the compiled chart, the Day 12+ generator is
+deterministic across fresh runs (sampled at days 12, 50, and 365), the flam
+rules hold (authored days may carry the owner's flams, Day 10 is capped at
+2, and generated days have at most 1), and every pattern file round-trips through the validator
 and the game's own sanitizer.
 
 GitHub Actions (`.github/workflows/ci.yml`) runs on every push and pull
@@ -193,7 +193,7 @@ failing the run.
 
 ## Quality checklist before announcing it
 
-- Play Days 1 to 10 and a few generated days (11+) on a real phone; confirm
+- Play Days 1 to 11 and a few generated days (12+) on a real phone; confirm
   every measure sums to exactly 4 beats and generated days are identical
   across two different browsers (determinism check).
 - Test in Safari iOS and Chrome Android: audio unlock, tap latency, layout in
