@@ -42,8 +42,8 @@ function assertElementSums(dayLabel, measures) {
   });
 }
 
-test('embedded DAYS in index.html: 11 days, each measure sums to 4 with no gaps', async (t) => {
-  assert.equal(game.DAYS.length, 11, 'index.html should embed exactly 11 hand-written days');
+test('embedded DAYS in index.html: 12 days, each measure sums to 4 with no gaps', async (t) => {
+  assert.equal(game.DAYS.length, 12, 'index.html should embed exactly 12 hand-written days');
   for (let i = 0; i < game.DAYS.length; i++) {
     const day = i + 1;
     await t.test(`day ${day}`, () => {
